@@ -1483,7 +1483,7 @@ function App() {
                           </div>
 
                           <div className="input-group">
-                            <label className="label">BİRİM FİYATI</label>
+                            <label className="label">{t('birimFiyati')}</label>
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
@@ -1494,7 +1494,7 @@ function App() {
                           </div>
 
                           <div className="input-group">
-                            <label className="label">TOPLAM FİYAT</label>
+                            <label className="label">{t('toplamFiyat')}</label>
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
@@ -1573,7 +1573,7 @@ function App() {
 
                           {/* Unit Price */}
                           <div className="input-group">
-                            <label className="label">BİRİM FİYATI</label>
+                            <label className="label">{t('birimFiyati')}</label>
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
@@ -1585,7 +1585,7 @@ function App() {
 
                           {/* Total Price */}
                           <div className="input-group">
-                            <label className="label">TOPLAM FİYAT</label>
+                            <label className="label">{t('toplamFiyat')}</label>
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">

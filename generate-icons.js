@@ -1,0 +1,75 @@
+const { createCanvas, loadImage } = require('canvas');
+const fs = require('fs');
+
+// SVG content for the icons
+const svg192 = `<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6b7280;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#9ca3af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f9fafb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#374151;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#374151;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  <circle cx="96" cy="96" r="88" fill="url(#gradient)" stroke="#e5e7eb" stroke-width="2"/>
+  <circle cx="98" cy="98" r="85" fill="url(#shadow)" opacity="0.3"/>
+  <path d="M 96 40 C 120 40, 140 60, 140 84 C 140 108, 120 128, 96 128 C 72 128, 52 108, 52 84 C 52 60, 72 40, 96 40 Z M 96 56 C 80 56, 68 68, 68 84 C 68 100, 80 112, 96 112 C 106 112, 114 108, 120 100 L 120 88 L 104 88 L 104 96 L 112 96 L 112 100 C 108 104, 102 106, 96 106 C 84 106, 74 96, 74 84 C 74 72, 84 62, 96 62 C 104 62, 111 66, 116 72 L 124 66 C 117 56, 107 56, 96 56 Z" fill="#ffffff" stroke="#374151" stroke-width="1"/>
+  <circle cx="96" cy="96" r="85" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+</svg>`;
+
+const svg512 = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6b7280;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#9ca3af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f9fafb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#374151;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#374151;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#gradient)" stroke="#e5e7eb" stroke-width="4"/>
+  <circle cx="260" cy="260" r="235" fill="url(#shadow)" opacity="0.3"/>
+  <path d="M 256 100 C 320 100, 370 150, 370 214 C 370 278, 320 328, 256 328 C 192 328, 142 278, 142 214 C 142 150, 192 100, 256 100 Z M 256 140 C 214 140, 182 172, 182 214 C 182 256, 214 288, 256 288 C 280 288, 302 278, 318 262 L 318 230 L 274 230 L 274 250 L 298 250 L 298 262 C 288 272, 272 278, 256 278 C 224 278, 198 252, 198 214 C 198 176, 224 150, 256 150 C 276 150, 294 158, 308 172 L 324 156 C 304 136, 281 140, 256 140 Z" fill="#ffffff" stroke="#374151" stroke-width="3"/>
+  <circle cx="256" cy="256" r="235" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+</svg>`;
+
+async function generateIcon(svgContent, size) {
+  try {
+    // Create a data URL from the SVG
+    const svgDataUrl = 'data:image/svg+xml;base64,' + Buffer.from(svgContent).toString('base64');
+    
+    // Load the SVG as an image
+    const img = await loadImage(svgDataUrl);
+    
+    // Create canvas
+    const canvas = createCanvas(size, size);
+    const ctx = canvas.getContext('2d');
+    
+    // Draw the image
+    ctx.drawImage(img, 0, 0, size, size);
+    
+    // Convert to PNG buffer
+    const buffer = canvas.toBuffer('image/png');
+    
+    // Save to file
+    fs.writeFileSync(`public/icon-${size}x${size}.png`, buffer);
+    console.log(`✅ Generated icon-${size}x${size}.png`);
+    
+  } catch (error) {
+    console.error(`❌ Error generating ${size}x${size} icon:`, error);
+  }
+}
+
+async function generateIcons() {
+  console.log('🎨 Generating PWA icons...');
+  await generateIcon(svg192, 192);
+  await generateIcon(svg512, 512);
+  console.log('✅ All icons generated successfully!');
+}
+
+generateIcons();
