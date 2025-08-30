@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Granitstone doğal taş teklif sistemi - Modern PWA uygulaması" />
+    <meta name="keywords" content="granitstone, doğal taş, teklif, fiyat, mermer, granit, PWA, React" />
+    <meta name="language" content="Turkish" />
+    <meta name="theme-color" content="#1f2937" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Granitstone" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Granitstone Teklif Sistemi</title>
+    
+    <!-- Debug script -->
+    <script>
+      console.log('🚀 App starting...');
+      window.addEventListener('error', function(e) {
+        console.error('❌ Error:', e.error);
+        document.body.innerHTML = '<div style="padding: 20px; font-family: Arial; background: #f00; color: white;"><h2>Error Loading App</h2><p>' + e.error.message + '</p><p>Check console for details</p></div>';
+      });
+      
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('❌ Promise rejection:', e.reason);
+        document.body.innerHTML = '<div style="padding: 20px; font-family: Arial; background: #f00; color: white;"><h2>Promise Error</h2><p>' + e.reason + '</p><p>Check console for details</p></div>';
+      });
+      
+      // Check if root element exists
+      document.addEventListener('DOMContentLoaded', function() {
+        const root = document.getElementById('root');
+        if (!root) {
+          console.error('❌ Root element not found!');
+          document.body.innerHTML = '<div style="padding: 20px; font-family: Arial; background: #f00; color: white;"><h2>Root Element Missing</h2><p>Could not find element with id="root"</p></div>';
+        } else {
+          console.log('✅ Root element found');
+        }
+        
+        // Check environment variables
+        console.log('Environment check:', {
+          PRODUCTS_URL: import.meta?.env?.VITE_PRODUCTS_CSV_URL || 'MISSING',
+          COLORS_URL: import.meta?.env?.VITE_COLORS_CSV_URL || 'MISSING'
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="root">
+      <div style="padding: 20px; font-family: Arial; text-align: center; color: #666;">
+        <h2>🔄 Loading...</h2>
+        <p>If this message persists, check the browser console for errors.</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
