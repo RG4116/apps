@@ -1,0 +1,10 @@
+# PWA Icon Placeholder
+
+This is a placeholder file for the 192x192 PWA icon.
+In a real project, you would replace this with an actual PNG image file.
+
+To generate proper PWA icons:
+1. Create a 512x512 source image
+2. Use tools like https://realfavicongenerator.net/ or https://www.pwabuilder.com/imageGenerator
+3. Generate all required sizes (192x192, 512x512, etc.)
+4. Replace these placeholder files with the actual images

@@ -1,0 +1,26 @@
+{
+  "name": "Granitstone Teklif Sistemi",
+  "short_name": "Granitstone",
+  "description": "Granitstone doğal taş teklif ve fiyatlandırma sistemi - Modern PWA uygulaması",
+  "lang": "tr",
+  "dir": "ltr",
+  "theme_color": "#1f2937",
+  "background_color": "#f9fafb",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

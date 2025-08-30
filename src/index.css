@@ -1,0 +1,210 @@
+/* Modern CSS Reset and Global Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* Apple-Style CSS Custom Properties and Reset */
+:root {
+  /* Apple-style Colors */
+  --primary-color: #3b82f6; /* Apple blue */
+  --primary-dark: #1d4ed8;
+  --secondary-color: #10b981; /* Apple green */
+  --accent-color: #f59e0b; /* Apple amber */
+  --text-primary: #111827; /* Apple's dark text */
+  --text-secondary: #6b7280; /* Apple's gray text */
+  --text-tertiary: #9ca3af; /* Apple's light gray */
+  --background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); /* Light gradient */
+  --card-background: rgba(255, 255, 255, 0.95);
+  --glass-backdrop: rgba(255, 255, 255, 0.8);
+  --border-color: rgba(0, 0, 0, 0.06);
+  --section-background: rgba(255, 255, 255, 0.6);
+  --section-border: rgba(0, 0, 0, 0.08);
+  
+  /* Apple Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  
+  /* Apple Spacing */
+  --space-xs: 0.5rem; /* 8px */
+  --space-sm: 0.75rem; /* 12px */
+  --space-md: 1rem; /* 16px */
+  --space-lg: 1.5rem; /* 24px */
+  --space-xl: 2rem; /* 32px */
+  --space-2xl: 3rem; /* 48px */
+  
+  /* Apple Borders & Radius */
+  --border-radius: 12px; /* Apple's standard radius */
+  --border-radius-lg: 16px; /* Apple's large radius */
+  --border-radius-xl: 20px; /* Apple's extra large radius */
+  --border-width: 1.5px; /* Apple's border width */
+  
+  /* Apple Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+    --card-background: rgba(31, 41, 55, 0.8);
+    --glass-backdrop: rgba(31, 41, 55, 0.6);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --section-background: rgba(31, 41, 55, 0.4);
+    --section-border: rgba(255, 255, 255, 0.15);
+  }
+}
+
+html,
+body {
+  height: 100%;
+  font-family: var(--font-family);
+  line-height: 1.5; /* Apple's preferred line height */
+  color: var(--text-primary);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1;
+  letter-spacing: -0.01em; /* Apple's tight letter spacing */
+}
+
+/* Ensure minimum 16px font size to prevent iOS Safari zoom */
+input,
+textarea,
+select,
+button {
+  font-size: 1rem !important; /* 16px minimum to prevent iOS zoom */
+  /* Enhanced Turkish character input support */
+  font-feature-settings: "kern" 1, "liga" 1;
+  unicode-bidi: embed;
+}
+
+/* Additional iOS Safari zoom prevention */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+textarea {
+  font-size: 1rem !important;
+  /* Ensure consistent spacing for date inputs */
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+}
+
+/* Global validation styling override for select elements */
+select {
+  background-image: none !important;
+}
+
+select:valid,
+select:invalid {
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+/* Apple-style scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  background: var(--background);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+}
+
+/* Apple-style focus states */
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Apple-style button focus */
+button:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Apple-style reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Live gradient animation for language toggle */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Force language toggle positioning */
+.language-toggle-container {
+  position: absolute !important;
+  top: 32px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+  margin-bottom: 24px !important;
+}
+
+/* Add top margin to form to create space for language button */
+.form-container {
+  margin-top: 120px !important;
+}
