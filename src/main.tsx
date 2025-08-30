@@ -4,9 +4,6 @@ import './index.css'
 import App from './App.tsx'
 import { LanguageProvider } from './contexts/LanguageContext.tsx'
 
-// Debug logging
-console.log('🚀 main.tsx loading...')
-
 // Register service worker for PWA functionality
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -20,12 +17,8 @@ if ('serviceWorker' in navigator) {
   })
 }
 
-try {
-  const rootElement = document.getElementById('root')
-  if (!rootElement) {
-    throw new Error('Root element not found')
-  }
-  
+const rootElement = document.getElementById('root')
+if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
       <LanguageProvider>
@@ -33,16 +26,4 @@ try {
       </LanguageProvider>
     </StrictMode>,
   )
-  console.log('✅ App rendered successfully')
-} catch (error) {
-  console.error('❌ Error:', error)
-  const errorDiv = document.createElement('div')
-  errorDiv.innerHTML = `
-    <div style="padding: 20px; font-family: Arial; background: #f00; color: white; text-align: center;">
-      <h2>Error Loading App</h2>
-      <p>${error}</p>
-      <p>Check console for details</p>
-    </div>
-  `
-  document.body.appendChild(errorDiv)
 }
