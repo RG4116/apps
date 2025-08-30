@@ -13,9 +13,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       },
       manifest: {
-        name: 'Modern Form PWA',
-        short_name: 'FormPWA',
-        description: 'A modern responsive PWA with React',
+        name: 'Hesaplama Modulu',
+        short_name: 'Hesaplama',
+        description: 'Granitstone doğal taş teklif ve fiyatlandırma sistemi',
         theme_color: '#6366f1',
         background_color: '#1f2937',
         display: 'standalone',

@@ -1,0 +1,52 @@
+<svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gray to white gradient -->
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6b7280;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#9ca3af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f9fafb;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Shadow gradient -->
+    <linearGradient id="shadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#374151;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#374151;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle with subtle gradient -->
+  <circle cx="96" cy="96" r="88" fill="url(#gradient)" stroke="#e5e7eb" stroke-width="2"/>
+  
+  <!-- Shadow for depth -->
+  <circle cx="98" cy="98" r="85" fill="url(#shadow)" opacity="0.3"/>
+  
+  <!-- Letter G -->
+  <path d="M 96 40 
+           C 120 40, 140 60, 140 84
+           C 140 108, 120 128, 96 128
+           C 72 128, 52 108, 52 84
+           C 52 60, 72 40, 96 40
+           Z
+           M 96 56
+           C 80 56, 68 68, 68 84
+           C 68 100, 80 112, 96 112
+           C 106 112, 114 108, 120 100
+           L 120 88
+           L 104 88
+           L 104 96
+           L 112 96
+           L 112 100
+           C 108 104, 102 106, 96 106
+           C 84 106, 74 96, 74 84
+           C 74 72, 84 62, 96 62
+           C 104 62, 111 66, 116 72
+           L 124 66
+           C 117 56, 107 56, 96 56
+           Z" 
+        fill="#ffffff" 
+        stroke="#374151" 
+        stroke-width="1"/>
+  
+  <!-- Inner highlight for 3D effect -->
+  <circle cx="96" cy="96" r="85" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+</svg>
