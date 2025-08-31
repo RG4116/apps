@@ -12,6 +12,7 @@ import { generateQuotationPDF } from './services/pdfService'
 import DecimalInput, { toNumber } from './components/DecimalInput'
 import { useLanguage } from './contexts/LanguageContext'
 import { LanguageToggle } from './components/LanguageToggle'
+import { getThicknessPriceMultiplier, getDepthPriceMultiplier } from './utils/priceCalculations'
 
 interface DepthGroup {
   id: string
@@ -257,8 +258,12 @@ function App() {
         // Use optimized loading: instant cache, background refresh
         const { products: productsData, colors: colorsData } = await getGoogleSheetsData()
         
-        setProducts(productsData)
-        setAllColors(colorsData)
+        // Sort products and colors alphabetically by name
+        const sortedProducts = [...productsData].sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'))
+        const sortedColors = [...colorsData].sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'))
+        
+        setProducts(sortedProducts)
+        setAllColors(sortedColors)
         
         // Initialize default labor services
         setAllLaborServices([
@@ -272,6 +277,29 @@ function App() {
         
         console.timeEnd('Data loading')
         console.log('✅ Data loaded:', productsData.length, 'products,', colorsData.length, 'colors')
+        
+        // Debug: Show all products with their stone types and currencies
+        console.log('📊 Product Debug Info:', productsData.map(p => ({
+          id: p.id,
+          name: p.name,
+          stoneType: p.stoneType || 'not set',
+          currency: p.currency || 'not set',
+          category: p.category
+        })))
+        
+        // Debug: Show KETO specifically
+        const keto = productsData.find(p => p.name.toUpperCase().includes('KETO'))
+        if (keto) {
+          console.log('🎯 KETO Debug Info:', {
+            id: keto.id,
+            name: keto.name,
+            stoneType: keto.stoneType || 'not set',
+            currency: keto.currency || 'not set',
+            category: keto.category
+          })
+        } else {
+          console.log('❌ KETO not found in products')
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -286,13 +314,19 @@ function App() {
   useEffect(() => {
     const handleDataUpdate = (newData: { products: Product[]; colors: Color[] }) => {
       console.log('📡 Real-time update received')
-      setProducts(newData.products)
-      setAllColors(newData.colors)
+      
+      // Sort products and colors alphabetically by name
+      const sortedProducts = [...newData.products].sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'))
+      const sortedColors = [...newData.colors].sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'))
+      
+      setProducts(sortedProducts)
+      setAllColors(sortedColors)
       
       // Update available colors for current product selection
       if (formData.urun) {
-        const filtered = getColorsForProduct(newData.colors, formData.urun)
-        setAvailableColors(filtered)
+        const filtered = getColorsForProduct(sortedColors, formData.urun)
+        const sortedFilteredColors = [...filtered].sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'))
+        setAvailableColors(sortedFilteredColors)
         
         // Only clear color selection if it no longer exists in the updated data
         // This preserves user selections during product changes
@@ -315,9 +349,10 @@ function App() {
     if (formData.urun && allColors.length > 0) {
       console.time('Color filtering')
       const colorsForProduct = getColorsForProduct(allColors, formData.urun)
-      setAvailableColors(colorsForProduct)
+      const sortedColorsForProduct = [...colorsForProduct].sort((a, b) => a.name.localeCompare(b.name, 'tr-TR'))
+      setAvailableColors(sortedColorsForProduct)
       console.timeEnd('Color filtering')
-      console.log('🎨 Found', colorsForProduct.length, 'colors for product', formData.urun)
+      console.log('🎨 Found', sortedColorsForProduct.length, 'colors for product', formData.urun)
       
       // Don't reset color here - let handleInputChange handle it to preserve measurements
     } else {
@@ -327,6 +362,7 @@ function App() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    
     setFormData(prev => {
       const newData = {
         ...prev,
@@ -374,11 +410,32 @@ function App() {
         }
         
         // Reset special detail prices while preserving selection and measurements
+        // Also validate special detail selection for new product category
         if (prev.specialDetail.tip && prev.specialDetail.tip !== 'Lütfen Seçin') {
-          newData.specialDetail = {
-            ...prev.specialDetail,
-            birimFiyati: 0,
-            toplamFiyat: 0
+          // Check if current special detail selection is valid for new product category
+          const selectedProduct = products.find(p => p.id === value)
+          const newCategory = selectedProduct?.category
+          const currentSelection = prev.specialDetail.tip
+          
+          // Get valid options for new category
+          const validOptions = newCategory === 'Porcelain' 
+            ? ['Lütfen Seçin', 'PİRAMİT']
+            : ['Lütfen Seçin', 'Profil', 'Hera', 'Hera Klasik', 'Trio', 'Country', 'Balık Sırtı', 'M20', 'MQ40', 'U40']
+          
+          // Reset selection if it's not valid for new category
+          if (!validOptions.includes(currentSelection)) {
+            newData.specialDetail = {
+              tip: '',
+              mtul: prev.specialDetail.mtul,
+              birimFiyati: 0,
+              toplamFiyat: 0
+            }
+          } else {
+            newData.specialDetail = {
+              ...prev.specialDetail,
+              birimFiyati: 0,
+              toplamFiyat: 0
+            }
           }
         }
         
@@ -498,9 +555,11 @@ function App() {
           if (field === 'derinlik' && typeof value === 'string') {
             const selectedColor = getSelectedColor()
             if (selectedColor?.price) {
-              // Convert price string to number and use it as base price
+              // Convert price string to number and apply depth-based and thickness multipliers
               const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-              updated.birimFiyati = basePrice
+              const depthMultiplier = getDepthPriceMultiplier(value)
+              const thicknessMultiplier = getThicknessPriceMultiplier(prev.tezgahKalinlik)
+              updated.birimFiyati = basePrice * depthMultiplier * thicknessMultiplier
             } else {
               updated.birimFiyati = 0
             }
@@ -534,11 +593,11 @@ function App() {
       toplamFiyat: 0
     }
     
-    // Set birimFiyati from selected color if available
+    // Set birimFiyati from selected color if available with 1.25x multiplier for panels
     const selectedColor = getSelectedColor()
     if (selectedColor?.price) {
       const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-      newPanel.birimFiyati = basePrice
+      newPanel.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for panels
     }
     
     setFormData(prev => ({
@@ -561,12 +620,12 @@ function App() {
         if (group.id === id) {
           const updated = { ...group, [field]: value }
           
-          // Auto-calculate birimFiyati from selected color price when initially set
+          // Auto-calculate birimFiyati from selected color price when initially set with 1.25x multiplier
           if (field === 'metrekare' && updated.birimFiyati === 0) {
             const selectedColor = getSelectedColor()
             if (selectedColor?.price) {
               const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-              updated.birimFiyati = basePrice
+              updated.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for panels
             }
           }
           
@@ -593,11 +652,11 @@ function App() {
       toplamFiyat: 0
     }
     
-    // Auto-fill price from selected color if available
+    // Auto-fill price from selected color if available with 1.25x multiplier for davlumbaz panels
     const selectedColor = getSelectedColor()
     if (selectedColor?.price) {
       const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-      newDavlumbaz.birimFiyati = basePrice
+      newDavlumbaz.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for davlumbaz panels
     }
     
     setFormData(prev => ({
@@ -620,12 +679,12 @@ function App() {
         if (group.id === id) {
           const updated = { ...group, [field]: value }
           
-          // Auto-calculate birimFiyati from selected color price when initially set
+          // Auto-calculate birimFiyati from selected color price when initially set with 1.25x multiplier
           if (field === 'metrekare' && updated.birimFiyati === 0) {
             const selectedColor = getSelectedColor()
             if (selectedColor?.price) {
               const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-              updated.birimFiyati = basePrice
+              updated.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for davlumbaz panels
             }
           }
           
@@ -641,6 +700,32 @@ function App() {
     }))
   }
 
+  // Get automatic skirting band based on front-edge thickness
+  const getAutomaticSkirtingBand = (thickness: string): string => {
+    // Band selection links to the chosen front-edge thickness:
+    // 5–6 cm edge → H:05–H:10 band
+    // 7–8 or 9–10 cm → H:11–H:20 band
+    // 11–15 cm → H:11–H:20 band  
+    // 16–20 cm → H:21–H:30 band
+    
+    // Normalize thickness string for parsing (handle different dash types)
+    const normalizedThickness = thickness.replace(/[–—]/g, '-')
+    
+    if (normalizedThickness.includes('5-6') || normalizedThickness.includes('5–6')) {
+      return 'H:05–H:10'
+    } else if (normalizedThickness.includes('7-8') || normalizedThickness.includes('7–8') ||
+               normalizedThickness.includes('9-10') || normalizedThickness.includes('9–10')) {
+      return 'H:11–H:20'
+    } else if (normalizedThickness.includes('11-15') || normalizedThickness.includes('11–15')) {
+      return 'H:11–H:20'
+    } else if (normalizedThickness.includes('16-20') || normalizedThickness.includes('16–20')) {
+      return 'H:21–H:30'
+    }
+    
+    // Default for standard thicknesses (1.5cm, 2cm, 4cm, etc.)
+    return 'H:05–H:10'
+  }
+
   // SÜPÜRGELİK management functions
   const supurgelikOptions = [
     'LÜTFEN SEÇİN',
@@ -651,22 +736,26 @@ function App() {
   ]
 
   const getSupurgelikPrice = (tip: string): number => {
+    // Süpürgelik fiyatları h:1,5 cm kalınlığının fiyatına göre hesaplanır
+    if (!tip || tip === 'LÜTFEN SEÇİN') return 0
+    
+    // h:1,5 cm kalınlığının fiyatını al
     const selectedColor = getSelectedColor()
-    if (!selectedColor?.price || !tip || tip === 'LÜTFEN SEÇİN') return 0
+    if (!selectedColor?.price) return 0
     
-    // Base price from color selection
     const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+    const h15cmPrice = basePrice * getThicknessPriceMultiplier('h:1.5 cm')
     
-    // Different pricing based on height range (this can be adjusted based on actual pricing logic)
+    // Süpürgelik fiyat hesaplamaları
     switch (tip) {
       case 'H:05–H:10':
-        return basePrice * 0.8 // 80% of base price
+        return h15cmPrice / 6 // h:1,5 cm fiyatı / 6
       case 'H:11–H:20':
-        return basePrice * 1.0 // 100% of base price
+        return h15cmPrice / 3 // h:1,5 cm fiyatı / 3
       case 'H:21–H:30':
-        return basePrice * 1.2 // 120% of base price
+        return h15cmPrice / 2 // h:1,5 cm fiyatı / 2
       case 'H:31 – (+)':
-        return basePrice * 1.5 // 150% of base price
+        return h15cmPrice // h:1,5 cm fiyatı
       default:
         return 0
     }
@@ -691,6 +780,14 @@ function App() {
     })
   }
 
+  // Auto-update skirting band when thickness changes
+  const updateSkirtingBandFromThickness = (thickness: string) => {
+    if (formData.supurgelik.tip && formData.supurgelik.tip !== 'LÜTFEN SEÇİN') {
+      const automaticBand = getAutomaticSkirtingBand(thickness)
+      updateSupurgelik('tip', automaticBand)
+    }
+  }
+
   // EVİYE management functions
   const eviyeOptions = [
     'Lütfen Seçin',
@@ -702,46 +799,76 @@ function App() {
   ]
 
   // SPECIAL DETAIL management functions
-  const specialDetailOptions = [
-    'Lütfen Seçin',
-    'Profil',
-    'Hera',
-    'Hera Klasik',
-    'Trio',
-    'Country',
-    'Balık Sırtı',
-    'M20',
-    'MQ40',
-    'U40'
-  ]
+  const getSpecialDetailOptions = (): string[] => {
+    // Porcelain grubu için sadece PİRAMİT seçeneği
+    if (isSelectedProductPorcelain()) {
+      return [
+        'Lütfen Seçin',
+        'PİRAMİT'
+      ]
+    }
+    
+    // Quartz grubu için tüm seçenekler (M20, MQ40, U40 dahil)
+    return [
+      'Lütfen Seçin',
+      'Profil',
+      'Hera',
+      'Hera Klasik',
+      'Trio',
+      'Country',
+      'Balık Sırtı',
+      'M20',
+      'MQ40',
+      'U40'
+    ]
+  }
+
+  // Translate special detail option names
+  const translateSpecialDetailOption = (option: string): string => {
+    const translations: Record<string, string> = {
+      'Lütfen Seçin': t('lutfenSecin'),
+      'PİRAMİT': t('piramit'),
+      'Profil': t('profil'),
+      'Hera': t('hera'),
+      'Hera Klasik': t('heraKlasik'),
+      'Trio': t('trio'),
+      'Country': t('country'),
+      'Balık Sırtı': t('balikSirti'),
+      'M20': t('m20'),
+      'MQ40': t('mq40'),
+      'U40': t('u40')
+    }
+    return translations[option] || option
+  }
 
   const getSpecialDetailPrice = (tip: string): number => {
-    const selectedColor = getSelectedColor()
-    if (!selectedColor?.price || !tip || tip === 'Lütfen Seçin') return 0
+    // Fixed TL/mtül list prices (group-agnostic or group-specific per table)
+    // These are NOT derived from base price - they are standalone fixed prices
+    if (!tip || tip === 'Lütfen Seçin') return 0
     
-    // Base price from color selection - for now, placeholder logic
-    const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-    
-    // Different pricing based on detail type (this can be adjusted based on actual pricing logic)
+    // Fixed pricing based on detail type (placeholder values - should come from table)
     switch (tip) {
       case 'Profil':
-        return basePrice * 0.1 // 10% of base price
+        return 180 // Fixed TL per mtül
       case 'Hera':
-        return basePrice * 0.15 // 15% of base price
+        return 220 // Fixed TL per mtül
       case 'Hera Klasik':
-        return basePrice * 0.12 // 12% of base price
+        return 200 // Fixed TL per mtül
       case 'Trio':
-        return basePrice * 0.18 // 18% of base price
+        return 280 // Fixed TL per mtül
       case 'Country':
-        return basePrice * 0.14 // 14% of base price
+        return 240 // Fixed TL per mtül
       case 'Balık Sırtı':
-        return basePrice * 0.16 // 16% of base price
+        return 260 // Fixed TL per mtül
       case 'M20':
-        return basePrice * 0.13 // 13% of base price
+        return 210 // Fixed TL per mtül
       case 'MQ40':
-        return basePrice * 0.17 // 17% of base price
+        return 300 // Fixed TL per mtül
       case 'U40':
-        return basePrice * 0.19 // 19% of base price
+        return 320 // Fixed TL per mtül
+      // Piramit seçeneği için fiyat
+      case 'PİRAMİT':
+        return 250 // Fixed TL per mtül (Porcelain için standart fiyat)
       default:
         return 0
     }
@@ -800,20 +927,32 @@ function App() {
         
         setFormData(prev => ({
           ...prev,
-          depthGroups: prev.depthGroups.map(group => ({
-            ...group,
-            birimFiyati: group.derinlik ? basePrice : 0,
-            toplamFiyat: group.derinlik ? group.mtul * basePrice : 0
-          })),
+          depthGroups: prev.depthGroups.map(group => {
+            if (group.derinlik) {
+              const depthMultiplier = getDepthPriceMultiplier(group.derinlik)
+              const thicknessMultiplier = getThicknessPriceMultiplier(prev.tezgahKalinlik)
+              const adjustedPrice = basePrice * depthMultiplier * thicknessMultiplier
+              return {
+                ...group,
+                birimFiyati: adjustedPrice,
+                toplamFiyat: group.mtul * adjustedPrice
+              }
+            }
+            return {
+              ...group,
+              birimFiyati: 0,
+              toplamFiyat: 0
+            }
+          }),
           panelGroups: prev.panelGroups.map(group => ({
             ...group,
-            birimFiyati: basePrice,
-            toplamFiyat: group.metrekare * basePrice
+            birimFiyati: basePrice * 1.25, // Apply 1.25x multiplier for panels
+            toplamFiyat: group.metrekare * (basePrice * 1.25)
           })),
           davlumbazGroups: prev.davlumbazGroups.map(group => ({
             ...group,
-            birimFiyati: basePrice,
-            toplamFiyat: group.metrekare * basePrice
+            birimFiyati: basePrice * 1.25, // Apply 1.25x multiplier for davlumbaz panels
+            toplamFiyat: group.metrekare * (basePrice * 1.25)
           })),
           supurgelik: prev.supurgelik.tip && prev.supurgelik.tip !== 'LÜTFEN SEÇİN' ? {
             ...prev.supurgelik,
@@ -833,6 +972,37 @@ function App() {
       }
     }
   }, [formData.renk])
+
+  // Update prices when thickness changes
+  useEffect(() => {
+    if (formData.tezgahKalinlik && formData.renk && formData.depthGroups.length > 0) {
+      const selectedColor = getSelectedColor()
+      
+      if (selectedColor?.price) {
+        const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+        
+        setFormData(prev => ({
+          ...prev,
+          depthGroups: prev.depthGroups.map(group => {
+            if (group.derinlik) {
+              const depthMultiplier = getDepthPriceMultiplier(group.derinlik)
+              const thicknessMultiplier = getThicknessPriceMultiplier(prev.tezgahKalinlik)
+              const adjustedPrice = basePrice * depthMultiplier * thicknessMultiplier
+              return {
+                ...group,
+                birimFiyati: adjustedPrice,
+                toplamFiyat: group.mtul * adjustedPrice
+              }
+            }
+            return group
+          })
+        }))
+        
+        // Auto-update skirting band based on thickness selection
+        updateSkirtingBandFromThickness(formData.tezgahKalinlik)
+      }
+    }
+  }, [formData.tezgahKalinlik, formData.renk])
 
   // LABOR management functions
   const updateLaborService = (index: number, isActive: boolean) => {
@@ -871,13 +1041,14 @@ function App() {
     })
   }
 
-  // DISCOUNT management functions
-  const updateDiscount = (field: keyof DiscountData, value: number) => {
+  // DISCOUNT management functions - immediate updates for real-time price calculation
+  const updateDiscountImmediate = (field: keyof DiscountData, stringValue: string) => {
+    const numericValue = toNumber(stringValue)
     setFormData(prev => ({
       ...prev,
       discounts: {
         ...prev.discounts,
-        [field]: Math.max(0, value) // Ensure non-negative values
+        [field]: Math.max(0, numericValue) // Ensure non-negative values
       }
     }))
   }
@@ -924,6 +1095,91 @@ function App() {
     return allColors.find(color => color.id === formData.renk)
   }
 
+  // Get selected product details including category
+  const getSelectedProduct = (): Product | undefined => {
+    return products.find(product => product.id === formData.urun)
+  }
+
+  // Get product category (Quartz or Porcelain)
+  const getProductCategory = (): 'Quartz' | 'Porcelain' | undefined => {
+    return getSelectedProduct()?.category
+  }
+
+  // Check if selected product is Porcelain
+  const isSelectedProductPorcelain = (): boolean => {
+    return getProductCategory() === 'Porcelain'
+  }
+
+  // Get selected product's stone type from Google Sheets
+  const getSelectedProductStoneType = (): string | undefined => {
+    const product = getSelectedProduct()
+    console.log('🔍 Selected Product Stone Type Debug:', {
+      productName: product?.name,
+      stoneType: product?.stoneType,
+      category: product?.category
+    })
+    return product?.stoneType
+  }
+
+  // Get selected product's currency from Google Sheets
+  const getSelectedProductCurrency = (): string => {
+    const product = getSelectedProduct()
+    const currency = product?.currency || 'TRY'
+    console.log('💰 Selected Product Currency Debug:', {
+      productName: product?.name,
+      currency: currency,
+      originalCurrency: product?.currency
+    })
+    return currency
+  }
+
+  // Calculate adjusted price based on thickness multiplier
+  const getAdjustedPrice = (): number => {
+    const selectedColor = getSelectedColor()
+    if (!selectedColor?.price || !formData.tezgahKalinlik) return 0
+    
+    const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+    const thicknessMultiplier = getThicknessPriceMultiplier(formData.tezgahKalinlik)
+    return basePrice * thicknessMultiplier
+  }
+
+  // Format price with dynamic currency based on selected product (default to Turkish Lira)
+  const formatPrice = (price: number): string => {
+    const roundedPrice = Math.round(price) // Round to nearest whole number
+    const selectedProduct = getSelectedProduct()
+    let currency = selectedProduct?.currency || 'TRY' // Default to Turkish Lira
+    
+    // Validate currency code - must be exactly 3 uppercase letters
+    const isValidCurrency = /^[A-Z]{3}$/.test(currency)
+    if (!isValidCurrency) {
+      console.warn(`Invalid currency code "${currency}", falling back to TRY`)
+      currency = 'TRY'
+    }
+    
+    // Determine locale based on currency
+    const locale = currency === 'EUR' ? 'de-DE' : 
+                   currency === 'USD' ? 'en-US' : 
+                   'tr-TR' // Default to Turkish locale
+    
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(roundedPrice)
+    } catch (error) {
+      console.error(`Error formatting price with currency ${currency}:`, error)
+      // Fallback to Turkish Lira formatting
+      return new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: 'TRY',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(roundedPrice)
+    }
+  }
+
   // Get product-specific height
   const getProductHeight = (): string => {
     const selectedProduct = products.find(p => p.id === formData.urun)
@@ -963,6 +1219,8 @@ function App() {
       color: colorName,
       height: height,
       price: price,
+      stoneType: getSelectedProductStoneType(), // From Google Sheets column F
+      currency: getSelectedProductCurrency(), // From Google Sheets column G
       
       // Groups - map to match PDF service interfaces
       depthGroups: formData.depthGroups.length > 0 ? formData.depthGroups.map(group => ({
@@ -1022,6 +1280,50 @@ function App() {
     console.log('Comprehensive PDF Export Data:', quotationData)
     await generateQuotationPDF(quotationData, openInNewTab, language)
   }
+
+  // Handle URL parameters for price list integration
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const productParam = urlParams.get('product')
+    const colorParam = urlParams.get('color')
+    const source = urlParams.get('source')
+    
+    if (source === 'price-list' && productParam && products.length > 0) {
+      console.log('🔗 Price List Integration: Setting product from URL', productParam)
+      
+      // Find product by ID
+      const product = products.find(p => p.id === productParam)
+      if (product) {
+        // Set product
+        setFormData(prev => ({
+          ...prev,
+          urun: product.id
+        }))
+        
+        // If color is also specified, set it after a short delay to ensure colors are loaded
+        if (colorParam) {
+          setTimeout(() => {
+            const color = allColors.find(c => c.id === colorParam)
+            if (color) {
+              console.log('🎨 Price List Integration: Setting color from URL', colorParam)
+              setFormData(prev => ({
+                ...prev,
+                renk: color.id
+              }))
+            }
+          }, 100)
+        }
+        
+        // Clear URL parameters to clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname)
+        
+        // Show success message
+        setTimeout(() => {
+          console.log('✅ Price List Integration: Product automatically selected')
+        }, 200)
+      }
+    }
+  }, [products, allColors]) // Run when products or colors are loaded
 
   return (
     <div className="app">
@@ -1188,7 +1490,9 @@ function App() {
                   {t('fiyat')}
                 </label>
                 <div className="price-value">
-                  {getSelectedColor()?.price ? (
+                  {getSelectedColor()?.price && formData.tezgahKalinlik ? (
+                    <span className="price">{formatPrice(getAdjustedPrice())}</span>
+                  ) : getSelectedColor()?.price ? (
                     <span className="price">₺{getSelectedColor()?.price}</span>
                   ) : (
                     <span className="price-placeholder">{t('renkSeciniz')}</span>
@@ -1263,7 +1567,7 @@ function App() {
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
-                                  {group.birimFiyati > 0 ? `₺${group.birimFiyati.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₺0.00'}
+                                  {group.birimFiyati > 0 ? formatPrice(group.birimFiyati) : formatPrice(0)}
                                 </span>
                               </div>
                             </div>
@@ -1274,7 +1578,7 @@ function App() {
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
-                                  {group.toplamFiyat > 0 ? `₺${group.toplamFiyat.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₺0.00'}
+                                  {group.toplamFiyat > 0 ? formatPrice(group.toplamFiyat) : formatPrice(0)}
                                 </span>
                               </div>
                             </div>
@@ -1338,7 +1642,7 @@ function App() {
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
-                                  {group.birimFiyati > 0 ? `₺${group.birimFiyati.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₺0.00'}
+                                  {group.birimFiyati > 0 ? formatPrice(group.birimFiyati) : formatPrice(0)}
                                 </span>
                               </div>
                             </div>
@@ -1349,7 +1653,7 @@ function App() {
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
-                                  {group.toplamFiyat > 0 ? `₺${group.toplamFiyat.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₺0.00'}
+                                  {group.toplamFiyat > 0 ? formatPrice(group.toplamFiyat) : formatPrice(0)}
                                 </span>
                               </div>
                             </div>
@@ -1413,7 +1717,7 @@ function App() {
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
-                                  {group.birimFiyati > 0 ? `₺${group.birimFiyati.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₺0.00'}
+                                  {group.birimFiyati > 0 ? formatPrice(group.birimFiyati) : formatPrice(0)}
                                 </span>
                               </div>
                             </div>
@@ -1424,7 +1728,7 @@ function App() {
                             <div className="price-display">
                               <div className="price-value">
                                 <span className="price">
-                                  {group.toplamFiyat > 0 ? `₺${group.toplamFiyat.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₺0.00'}
+                                  {group.toplamFiyat > 0 ? formatPrice(group.toplamFiyat) : formatPrice(0)}
                                 </span>
                               </div>
                             </div>
@@ -1468,7 +1772,7 @@ function App() {
                             </option>
                           ))}
                         </select>
-                      </div>
+                                           </div>
 
                       {formData.supurgelik.tip && formData.supurgelik.tip !== 'LÜTFEN SEÇİN' && (
                         <>
@@ -1536,9 +1840,9 @@ function App() {
                           className="input select"
                           disabled={!formData.renk}
                         >
-                          {specialDetailOptions.map((option) => (
+                          {getSpecialDetailOptions().map((option) => (
                             <option key={option} value={option}>
-                              {option === 'Lütfen Seçin' ? t('lutfenSecin') : option}
+                              {translateSpecialDetailOption(option)}
                             </option>
                           ))}
                         </select>
@@ -1666,22 +1970,29 @@ function App() {
                     <div className="labor-group-fields">
                       {/* Left column */}
                       <div className="labor-column">
-                        {formData.labor.services.slice(0, 4).map((service, index) => (
-                          <div key={index} className="labor-service-item">
-                            <div className="labor-service-header">
-                              <span className="labor-service-name">{translateLaborService(service.name)}</span>
-                              <label className="toggle-switch">
-                                <input
-                                  type="checkbox"
-                                  checked={service.isActive}
-                                  onChange={(e) => updateLaborService(index, e.target.checked)}
-                                  disabled={!formData.renk}
-                                />
-                                <span className="toggle-slider"></span>
-                              </label>
+                        {formData.labor.services.slice(0, 4).map((service, index) => {
+                          // Hide "SU DAMLALIĞI TAKIM FİYATI" for Porcelain stones
+                          if (service.name === 'SU DAMLALIĞI TAKIM FİYATI' && isSelectedProductPorcelain()) {
+                            return null;
+                          }
+                          
+                          return (
+                            <div key={index} className="labor-service-item">
+                              <div className="labor-service-header">
+                                <span className="labor-service-name">{translateLaborService(service.name)}</span>
+                                <label className="toggle-switch">
+                                  <input
+                                    type="checkbox"
+                                    checked={service.isActive}
+                                    onChange={(e) => updateLaborService(index, e.target.checked)}
+                                    disabled={!formData.renk}
+                                  />
+                                  <span className="toggle-slider"></span>
+                                </label>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       {/* Right column */}
@@ -1730,7 +2041,7 @@ function App() {
                     <label className="label">{t('iskonto')}</label>
                     <DecimalInput
                       value={formData.discounts.totalListDiscount || ''}
-                      onChange={(value) => updateDiscount('totalListDiscount', toNumber(value))}
+                      onChange={(value) => updateDiscountImmediate('totalListDiscount', value)}
                       placeholder="0"
                       disabled={!formData.renk}
                     />
@@ -1740,7 +2051,7 @@ function App() {
                     <label className="label">{t('iskontoPlus')}</label>
                     <DecimalInput
                       value={formData.discounts.depthPanelDiscount || ''}
-                      onChange={(value) => updateDiscount('depthPanelDiscount', toNumber(value))}
+                      onChange={(value) => updateDiscountImmediate('depthPanelDiscount', value)}
                       placeholder="0"
                       disabled={!formData.renk}
                     />

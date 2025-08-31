@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Granitstone Fiyat Listesi</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="description" content="Granitstone taş fiyat listesi - Quartz, Porcelain ve diğer ürünler">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="logogs.png">
+    <link rel="apple-touch-icon" href="logogs.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="logogs.png" alt="Granitstone" class="logo">
+                    <h1>Fiyat Listesi</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="product-selector">
+                        <select id="productSelector" class="product-select">
+                            <option value="">Ürün Seçin</option>
+                        </select>
+                    </div>
+                    <button id="searchToggle" class="icon-btn" title="Arama">
+                        🔍
+                    </button>
+                    <button id="filterToggle" class="icon-btn" title="Filtre">
+                        🔧
+                    </button>
+                    <button id="refreshBtn" class="icon-btn" title="Yenile">
+                        🔄
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div id="searchContainer" class="search-container hidden">
+                <input type="text" id="searchInput" placeholder="Ürün veya renk ara..." class="search-input">
+                <button id="clearSearch" class="clear-btn">✕</button>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div id="filterContainer" class="filter-container hidden">
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">Tüm Kategoriler</option>
+                    <option value="Quartz">Quartz</option>
+                    <option value="Porcelain">Porcelain</option>
+                </select>
+                <select id="stoneTypeFilter" class="filter-select">
+                    <option value="">Tüm Taş Tipleri</option>
+                </select>
+                <select id="currencyFilter" class="filter-select">
+                    <option value="">Tüm Para Birimleri</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Veriler yükleniyor...</p>
+        </div>
+
+        <!-- Main Content -->
+        <main id="mainContent" class="main-content hidden">
+            <!-- Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Toplam Ürün:</span>
+                    <span id="totalProducts" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Filtrelenen:</span>
+                    <span id="filteredProducts" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Son Güncelleme:</span>
+                    <span id="lastUpdate" class="stat-value">-</span>
+                </div>
+            </div>
+
+            <!-- Product Page Container -->
+            <div id="productPageContainer" class="product-page-container">
+                <!-- Single product page will be displayed here -->
+            </div>
+
+            <!-- All Products Grid (when no product is selected) -->
+            <div id="productGrid" class="product-grid">
+                <!-- Products will be dynamically loaded here -->
+            </div>
+
+            <!-- Calculator Button -->
+            <div class="calculator-fab">
+                <button id="calculatorBtn" class="fab-btn" title="Hesap Makinesi">
+                    🧮
+                </button>
+            </div>
+        </main>
+
+        <!-- Product Detail Modal -->
+        <div id="productModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Ürün Detayları</h2>
+                    <button id="closeModal" class="close-btn">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalContent">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="calculateWithProduct" class="btn btn-primary">
+                        Bu Ürünle Hesapla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

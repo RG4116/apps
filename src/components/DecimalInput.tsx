@@ -82,9 +82,13 @@ const DecimalInput: React.FC<DecimalInputProps> = ({
     if (isEditingNumber(s, allowNegative)) {
       setText(s);
 
-      // if it becomes a complete number, live-update parent
+      // Always update parent immediately for real-time updates
+      // This ensures deletion, partial edits, and complete numbers all trigger updates
       if (isCompleteNumber(s)) {
         onChange(normalize(s));
+      } else {
+        // For incomplete/empty values, send empty string (parent will convert to 0)
+        onChange('');
       }
     }
   };

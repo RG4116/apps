@@ -1,75 +1,11 @@
 import jsPDF from 'jspdf'
-
-// Generate unique ID for quotation
-const generateQuotationId = (): string => {
-  const now = new Date()
-  const year = now.getFullYear().toString().slice(-2)
-  const month = (now.getMonth() + 1).toString().padStart(2, '0')
-  const day = now.getDate().toString().padStart(2, '0')
-  const time = now.getHours().toString().padStart(2, '0') + now.getMinutes().toString().padStart(2, '0')
-  return `GS${year}${month}${day}${time}`
-}
-
-// Simple barcode generation for Code128
-const generateBarcode = (text: string): string => {
-  // Simplified barcode pattern - each character represented by bars
-  const patterns: { [key: string]: string } = {
-    '0': '11011001100', '1': '11001101100', '2': '11001100110', '3': '10010011000',
-    '4': '10010001100', '5': '10001001100', '6': '10011001000', '7': '10011000100',
-    '8': '10001100100', '9': '11001001000', 'A': '11001000100', 'B': '11000100100',
-    'C': '10110011100', 'D': '10011011100', 'E': '10011001110', 'F': '10111001000',
-    'G': '10011101000', 'H': '10011100100', 'S': '11011100100'
-  }
-  
-  let barcode = '11010010000' // Start pattern
-  for (const char of text) {
-    barcode += patterns[char] || patterns['0']
-  }
-  barcode += '1100011101011' // Stop pattern
-  return barcode
-}
-
-// Draw barcode on PDF
-const drawBarcode = (doc: jsPDF, text: string, x: number, y: number, width: number, height: number) => {
-  const barcode = generateBarcode(text)
-  const barWidth = width / barcode.length
-  
-  doc.setFillColor(0, 0, 0)
-  let currentX = x
-  
-  for (let i = 0; i < barcode.length; i++) {
-    if (barcode[i] === '1') {
-      doc.rect(currentX, y, barWidth, height, 'F')
-    }
-    currentX += barWidth
-  }
-}
-
-// Load logo image and convert to base64
-const loadLogo = async (): Promise<string | null> => {
-  try {
-    const response = await fetch('/logogs.png')
-    if (!response.ok) {
-      console.log('❌ Logo not found at /logogs.png')
-      return null
-    }
-    
-    const blob = await response.blob()
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const base64 = reader.result as string
-        const base64Data = base64.split(',')[1]
-        resolve(base64Data)
-      }
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
-    })
-  } catch (err) {
-    console.log('❌ Failed to load logo:', err)
-    return null
-  }
-}
+import {
+  generateQuotationId,
+  drawBarcode,
+  loadLogo,
+  outputPDF,
+  type QuotationData
+} from './pdfUtils'
 
 // Setup fonts and headers with proper Turkish support
 async function setupFont(doc: jsPDF): Promise<boolean> {
@@ -202,87 +138,7 @@ function safeSetFont(
 }
 
 // Data interfaces for comprehensive PDF export
-export interface DepthGroupData {
-  derinlik: number
-  mtul: number
-  birimFiyati: number
-  toplamFiyat: number
-}
-
-export interface PanelGroupData {
-  metrekare: number
-  birimFiyati: number
-  toplamFiyat: number
-}
-
-export interface DavlumbazGroupData {
-  metrekare: number
-  birimFiyati: number
-  toplamFiyat: number
-}
-
-export interface SupurgelikData {
-  tip: string
-  mtul: number
-  birimFiyati: number
-  toplamFiyat: number
-}
-
-export interface EviyeData {
-  tip: string
-  toplamFiyat: number
-}
-
-export interface SpecialDetailData {
-  tip: string
-  mtul: number
-  birimFiyati: number
-  toplamFiyat: number
-}
-
-export interface LaborServiceItem {
-  name: string
-  isActive: boolean
-  price: number
-}
-
-export interface LaborData {
-  services: LaborServiceItem[]
-  totalPrice: number
-}
-
-export interface DiscountData {
-  totalListDiscount: number
-  depthPanelDiscount: number
-}
-
-export interface QuotationData {
-  // Basic Information
-  firma: string
-  musteri: string
-  mimar: string
-  tarih: string
-  product: string
-  color: string
-  height: string
-  price: number
-  
-  // Groups
-  depthGroups?: DepthGroupData[]
-  panelGroups?: PanelGroupData[]
-  davlumbazGroups?: DavlumbazGroupData[]
-  
-  // Services
-  supurgelik?: SupurgelikData
-  eviye?: EviyeData
-  specialDetail?: SpecialDetailData
-  labor?: LaborData
-  
-  // Pricing
-  discounts?: DiscountData
-  totalPrice?: number
-  finalPrice?: number
-}
+// Moved to pdfUtils.ts to avoid duplication
 
 export const generateQuotationPDF = async (data: QuotationData, openInNewTab = false, language: 'tr' | 'en' = 'tr') => {
   console.log('PDF Generation - Input Data:', data)
@@ -427,6 +283,24 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     'TEZGAH ALTI EVİYE İŞÇİLİK': language === 'en' ? 'UNDER-COUNTER SINK LABOR' : 'TEZGAH ALTI EVİYE İŞÇİLİK',
     'ÇEYREK DAİRE OVAL İŞÇİLİK': language === 'en' ? 'QUARTER CIRCLE OVAL LABOR' : 'ÇEYREK DAİRE OVAL İŞÇİLİK',
     'YARIM DAİRE OVAL İŞÇİLİK': language === 'en' ? 'HALF CIRCLE OVAL LABOR' : 'YARIM DAİRE OVAL İŞÇİLİK'
+  }
+
+  // Special Detail option translations
+  const translateSpecialDetailForPdf = (option: string): string => {
+    const specialDetailTranslations: { [key: string]: string } = {
+      'PİRAMİT': language === 'en' ? 'PYRAMID' : 'PİRAMİT',
+      'Profil': language === 'en' ? 'Profile' : 'Profil',
+      'Hera': language === 'en' ? 'Hera' : 'Hera',
+      'Hera Klasik': language === 'en' ? 'Hera Classic' : 'Hera Klasik',
+      'Trio': language === 'en' ? 'Trio' : 'Trio',
+      'Country': language === 'en' ? 'Country' : 'Country',
+      'Balık Sırtı': language === 'en' ? 'Fish Scale' : 'Balık Sırtı',
+      'M20': language === 'en' ? 'M20' : 'M20',
+      'MQ40': language === 'en' ? 'MQ40' : 'MQ40',
+      'U40': language === 'en' ? 'U40' : 'U40'
+    }
+    
+    return specialDetailTranslations[option] || option
   }
 
   const doc = new jsPDF('portrait', 'mm', 'a4')
@@ -750,7 +624,8 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     
     if (data.specialDetail) {
       ensureRoom(4)
-      safeText(doc, hasFont, `${t.specialDetail}: ${data.specialDetail.tip}`, MARGIN_LEFT, y)
+      const translatedDetail = translateSpecialDetailForPdf(data.specialDetail.tip)
+      safeText(doc, hasFont, `${t.specialDetail}: ${translatedDetail}`, MARGIN_LEFT, y)
       safeText(doc, hasFont, `${data.specialDetail.toplamFiyat.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       y += 4
     }
@@ -959,21 +834,6 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
   doc.line(MARGIN_LEFT, y, PAGE_WIDTH - MARGIN_RIGHT, y)
   y += 6
 
-  // Output
-  const pdfBlob = doc.output('blob')
-
-  if (openInNewTab) {
-    const pdfUrl = URL.createObjectURL(pdfBlob)
-    window.location.href = pdfUrl
-    setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000)
-  } else {
-    const now = new Date()
-    const shortDate = now.getFullYear().toString().slice(-2) + 
-                     (now.getMonth() + 1).toString().padStart(2, '0') + 
-                     now.getDate().toString().padStart(2, '0')
-    const shortTime = now.getHours().toString().padStart(2, '0') + 
-                     now.getMinutes().toString().padStart(2, '0')
-    const filename = `GS_${shortDate}_${shortTime}_${quotationId}.pdf`
-    doc.save(filename)
-  }
+  // Output using shared utility
+  outputPDF(doc, quotationId, openInNewTab)
 }

@@ -5,6 +5,9 @@
 export interface Product {
   id: string;
   name: string;
+  category?: 'Quartz' | 'Porcelain'; // New field for stone categorization
+  stoneType?: string; // Column F: Stone Type (Taş Tipi)
+  currency?: string; // Column G: Currency (Para Birimi)
 }
 
 export interface Color {
@@ -16,6 +19,51 @@ export interface Color {
   hexColor?: string;
   imageUrl?: string;
 }
+
+// Helper function to categorize stones based on their names or explicit stoneType field
+const categorizeStone = (productName: string, stoneType?: string): 'Quartz' | 'Porcelain' => {
+  // First check if we have explicit stone type from Google Sheets
+  if (stoneType) {
+    const normalizedType = stoneType.toUpperCase();
+    if (normalizedType.includes('QUARTZ') || normalizedType.includes('KUVARS')) {
+      return 'Quartz';
+    }
+    if (normalizedType.includes('PORCELAIN') || normalizedType.includes('PORSELEN')) {
+      return 'Porcelain';
+    }
+  }
+  
+  // Fallback to name-based categorization
+  const name = productName.toUpperCase();
+  
+  // Quartz stones
+  if (name.includes('BELENCO') || 
+      name.includes('ÇIMSTONE') || 
+      name.includes('COANTE') ||
+      name.includes('SILESTONE') ||
+      name.includes('T-ONE')) {
+    return 'Quartz';
+  }
+  
+  // Porcelain stones (default for most)
+  if (name.includes('ANATOLIA') ||
+      name.includes('AVANTE') ||
+      name.includes('DEKTON') ||
+      name.includes('FLORIM') ||
+      name.includes('INFINITY') ||
+      name.includes('LAMAR') ||
+      name.includes('LAMINAM') ||
+      name.includes('LEVEL') ||
+      name.includes('MATERIA') ||
+      name.includes('MYTOP') ||
+      name.includes('NEOLITH') ||
+      name.includes('NG STONE')) {
+    return 'Porcelain';
+  }
+  
+  // Default to Porcelain if not specified
+  return 'Porcelain';
+};
 
 interface CachedData {
   products: Product[];
@@ -204,25 +252,59 @@ const normalizeProduct = (row: Record<string, any>): Product | null => {
   const idKey = findKey(row, ['id', 'ıd', 'ürün id', 'urun id', 'productid', 'product id']);
   const nameKey = findKey(row, ['name', 'ad', 'adı', 'urun', 'ürün', 'ürün adı', 'urun adı', 'product', 'product name']);
   const activeKey = findKey(row, ['active', 'aktif']);
+  const stoneTypeKey = findKey(row, ['stonetype', 'stone type', 'taş tipi', 'tas tipi', 'stone_type']);
+  const currencyKey = findKey(row, ['currency', 'para birimi', 'para_birimi']);
 
   // Exclude inactive
   if (activeKey && String(row[activeKey]) === 'Hayır') return null;
 
-  // If headers are unknown but the server preserved column order, fall back to first two values.
+  // If headers are unknown but the server preserved column order, fall back to column positions.
   if (!idKey || !nameKey) {
     const vals = Object.values(row);
     if (vals.length >= 2) {
+      const productName = String(vals[1] ?? '').trim();
+      let currency = vals[6] ? String(vals[6]).trim() : undefined;
+      
+      // Validate and clean currency code
+      if (currency) {
+        currency = currency.toUpperCase()
+        if (!/^[A-Z]{3}$/.test(currency)) {
+          console.warn(`Invalid currency code "${currency}" for product "${productName}", ignoring`)
+          currency = undefined
+        }
+      }
+      
       return {
         id: String(vals[0] ?? '').trim(),
-        name: String(vals[1] ?? '').trim(),
+        name: productName,
+        category: categorizeStone(productName, vals[5] ? String(vals[5]).trim() : undefined), // Use both name and stoneType
+        stoneType: vals[5] ? String(vals[5]).trim() : undefined, // Column F
+        currency: currency, // Column G
       };
     }
     return null;
   }
 
+  const productName = String(row[nameKey] ?? '').trim();
+  const stoneType = stoneTypeKey ? String(row[stoneTypeKey] ?? '').trim() : undefined;
+  let currency = currencyKey ? String(row[currencyKey] ?? '').trim() : undefined;
+  
+  // Validate and clean currency code
+  if (currency) {
+    currency = currency.toUpperCase()
+    // Must be exactly 3 letters for valid ISO currency code
+    if (!/^[A-Z]{3}$/.test(currency)) {
+      console.warn(`Invalid currency code "${currency}" for product "${productName}", ignoring`)
+      currency = undefined
+    }
+  }
+  
   return {
     id: String(row[idKey] ?? '').trim(),
-    name: String(row[nameKey] ?? '').trim(),
+    name: productName,
+    category: categorizeStone(productName, stoneType), // Use both name and stoneType for categorization
+    stoneType: stoneType || undefined,
+    currency: currency || undefined,
   };
 };
 

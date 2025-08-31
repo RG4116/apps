@@ -5,6 +5,8 @@
 export interface Product {
   id: string;
   name: string;
+  stoneType?: string; // Column F: Stone Type (Taş Tipi)
+  currency?: string; // Column G: Currency (Para Birimi)
 }
 
 export interface Color {
@@ -204,25 +206,55 @@ const normalizeProduct = (row: Record<string, any>): Product | null => {
   const idKey = findKey(row, ['id', 'ıd', 'ürün id', 'urun id', 'productid', 'product id']);
   const nameKey = findKey(row, ['name', 'ad', 'adı', 'urun', 'ürün', 'ürün adı', 'urun adı', 'product', 'product name']);
   const activeKey = findKey(row, ['active', 'aktif']);
+  const stoneTypeKey = findKey(row, ['stonetype', 'stone type', 'taş tipi', 'tas tipi', 'stone_type']);
+  const currencyKey = findKey(row, ['currency', 'para birimi', 'para_birimi']);
 
   // Exclude inactive
   if (activeKey && String(row[activeKey]) === 'Hayır') return null;
 
-  // If headers are unknown but the server preserved column order, fall back to first two values.
+  // If headers are unknown but the server preserved column order, fall back to column positions.
   if (!idKey || !nameKey) {
     const vals = Object.values(row);
     if (vals.length >= 2) {
+      let currency = vals[6] ? String(vals[6]).trim() : undefined;
+      
+      // Validate and clean currency code
+      if (currency) {
+        currency = currency.toUpperCase()
+        if (!/^[A-Z]{3}$/.test(currency)) {
+          console.warn(`Invalid currency code "${currency}" for product "${vals[1] ?? 'unknown'}", ignoring`)
+          currency = undefined
+        }
+      }
+      
       return {
         id: String(vals[0] ?? '').trim(),
         name: String(vals[1] ?? '').trim(),
+        stoneType: vals[5] ? String(vals[5]).trim() : undefined, // Column F
+        currency: currency, // Column G
       };
     }
     return null;
   }
 
+  const stoneType = stoneTypeKey ? String(row[stoneTypeKey] ?? '').trim() : undefined;
+  let currency = currencyKey ? String(row[currencyKey] ?? '').trim() : undefined;
+
+  // Validate and clean currency code
+  if (currency) {
+    currency = currency.toUpperCase()
+    // Must be exactly 3 letters for valid ISO currency code
+    if (!/^[A-Z]{3}$/.test(currency)) {
+      console.warn(`Invalid currency code "${currency}" for product "${row[nameKey] ?? 'unknown'}", ignoring`)
+      currency = undefined
+    }
+  }
+
   return {
     id: String(row[idKey] ?? '').trim(),
     name: String(row[nameKey] ?? '').trim(),
+    stoneType: stoneType || undefined,
+    currency: currency || undefined,
   };
 };
 

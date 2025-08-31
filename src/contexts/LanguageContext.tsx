@@ -106,6 +106,21 @@ export interface Translations {
   depthCounter: string
   panelCounter: string
   davlumbazCounter: string
+  
+  // Special Detail Options
+  piramit: string
+  piramitM20: string
+  piramitMQ40: string
+  piramitU40: string
+  profil: string
+  hera: string
+  heraKlasik: string
+  trio: string
+  country: string
+  balikSirti: string
+  m20: string
+  mq40: string
+  u40: string
 }
 
 // Translation data
@@ -210,7 +225,22 @@ const translations: Record<Language, Translations> = {
     // Numbers and counters
     depthCounter: '({count}/5)',
     panelCounter: '({count}/3)',
-    davlumbazCounter: '({count}/3)'
+    davlumbazCounter: '({count}/3)',
+    
+    // Special Detail Options
+    piramit: 'PİRAMİT',
+    piramitM20: 'Piramit M20',
+    piramitMQ40: 'Piramit MQ40',
+    piramitU40: 'Piramit U40',
+    profil: 'Profil',
+    hera: 'Hera',
+    heraKlasik: 'Hera Klasik',
+    trio: 'Trio',
+    country: 'Country',
+    balikSirti: 'Balık Sırtı',
+    m20: 'M20',
+    mq40: 'MQ40',
+    u40: 'U40'
   },
   en: {
     // Common
@@ -312,7 +342,22 @@ const translations: Record<Language, Translations> = {
     // Numbers and counters
     depthCounter: '({count}/5)',
     panelCounter: '({count}/3)',
-    davlumbazCounter: '({count}/3)'
+    davlumbazCounter: '({count}/3)',
+    
+    // Special Detail Options
+    piramit: 'PYRAMID',
+    piramitM20: 'Pyramid M20',
+    piramitMQ40: 'Pyramid MQ40',
+    piramitU40: 'Pyramid U40',
+    profil: 'Profile',
+    hera: 'Hera',
+    heraKlasik: 'Hera Classic',
+    trio: 'Trio',
+    country: 'Country',
+    balikSirti: 'Fish Scale',
+    m20: 'M20',
+    mq40: 'MQ40',
+    u40: 'U40'
   }
 }
 
