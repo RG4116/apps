@@ -184,7 +184,7 @@ function App() {
     tarih: getTodayFormatted(), // Set today's date in DD/MM/YYYY format
     urun: '',
     renk: '',
-    tezgahKalinlik: 'h:4 cm', // Set default value
+    tezgahKalinlik: 'h:5–6 cm', // Set default value
     supurgelik: {
       tip: '',
       mtul: 1,
@@ -331,7 +331,7 @@ function App() {
         // Only clear color selection if it no longer exists in the updated data
         // This preserves user selections during product changes
         if (formData.renk && !filtered.find(c => c.id === formData.renk)) {
-          setFormData(prev => ({ ...prev, renk: '', tezgahKalinlik: 'h:4 cm' }))
+          setFormData(prev => ({ ...prev, renk: '', tezgahKalinlik: 'h:5–6 cm' }))
         }
       }
     }
@@ -377,7 +377,7 @@ function App() {
           newData.renk = ''
         }
         // Always reset thickness when product changes for consistency
-        newData.tezgahKalinlik = 'h:4 cm'
+        newData.tezgahKalinlik = 'h:5–6 cm'
         
         // Validate and update depth groups for the new product (handle Dekton vs non-Dekton)
         newData.depthGroups = validateDepthGroups(value).map(group => ({
@@ -453,7 +453,7 @@ function App() {
       
       // Reset tezgah kalinlik when color changes
       if (name === 'renk') {
-        newData.tezgahKalinlik = 'h:4 cm' // Reset to default
+        newData.tezgahKalinlik = 'h:5–6 cm' // Reset to default
       }
       
       return newData
@@ -468,7 +468,7 @@ function App() {
       tarih: getTodayFormatted(), // Reset to today's date in DD/MM/YYYY format
       urun: '',
       renk: '',
-      tezgahKalinlik: 'h:4 cm',
+      tezgahKalinlik: 'h:5–6 cm',
       supurgelik: {
         tip: '',
         mtul: 1,
@@ -722,7 +722,7 @@ function App() {
       return 'H:21–H:30'
     }
     
-    // Default for standard thicknesses (1.5cm, 2cm, 4cm, etc.)
+    // Default for standard thicknesses (1.5cm, 2cm, 5-6cm, etc.)
     return 'H:05–H:10'
   }
 
@@ -1524,7 +1524,6 @@ function App() {
                     {!formData.renk ? t('onceRenkSeciniz') : t('kalinlikSeciniz')}
                   </option>
                   <option value={getProductHeight()}>{getProductHeight()}</option>
-                  <option value="h:4 cm">h:4 cm</option>
                   <option value="h:5–6 cm">h:5–6 cm</option>
                   <option value="h:7–8 cm">h:7–8 cm</option>
                   <option value="h:9–10 cm">h:9–10 cm</option>
@@ -1866,14 +1865,14 @@ function App() {
             {/* SPECIAL DETAIL Section - Full width below supurgelik groups */}
             {(formData.renk || formData.specialDetail.tip) && (
               <section className="supurgelik-groups-section">
-                <div className="supurgelik-header" onClick={() => toggleSection('specialDetail')}>
-                  <label className="label">{t('ozelOnDetay')}</label>
+                <div className="supurgelik-header disabled" style={{opacity: 0.5, cursor: "not-allowed"}} onClick={() => {}}>
+                  <label className="label">{t('ozelOnDetay')}<span style={{fontSize: "12px", color: "#999", marginLeft: "8px"}}>(Geçici olarak devre dışı)</span></label>
                   <div className="section-toggle">
                     <span className="toggle-icon">{collapsedSections.specialDetail ? '▼' : '▲'}</span>
                   </div>
                 </div>
 
-                {!collapsedSections.specialDetail && (
+                {false && (
                   <div className="supurgelik-group">
                     <div className="special-detail-content">
                       <div className="input-group">
@@ -1957,14 +1956,14 @@ function App() {
             {/* EVİYE Section - Full width below special detail groups */}
             {(formData.renk || formData.eviye.tip) && (
               <section className="eviye-groups-section">
-                <div className="eviye-header" onClick={() => toggleSection('eviye')}>
-                  <label className="label">{t('ozelUretimEviye')}</label>
+                <div className="eviye-header disabled" style={{opacity: 0.5, cursor: "not-allowed"}} onClick={() => {}}>
+                  <label className="label">{t('ozelUretimEviye')}<span style={{fontSize: "12px", color: "#999", marginLeft: "8px"}}>(Geçici olarak devre dışı)</span></label>
                   <div className="section-toggle">
                     <span className="toggle-icon">{collapsedSections.eviye ? '▼' : '▲'}</span>
                   </div>
                 </div>
 
-                {!collapsedSections.eviye && (
+                {false && (
                   <div className="eviye-group">
                     <div className="eviye-group-fields">
                       <div className="input-group">
@@ -2006,14 +2005,14 @@ function App() {
             {/* LABOR Section - İşçilik services with modern toggles */}
             {(formData.renk || formData.labor.services.some(s => s.isActive)) && (
               <section className="supurgelik-groups-section">
-                <div className="supurgelik-header" onClick={() => toggleSection('labor')}>
-                  <label className="label">{t('iscilikHizmetleri')}</label>
+                <div className="supurgelik-header disabled" style={{opacity: 0.5, cursor: "not-allowed"}} onClick={() => {}}>
+                  <label className="label">{t('iscilikHizmetleri')}<span style={{fontSize: "12px", color: "#999", marginLeft: "8px"}}>(Geçici olarak devre dışı)</span></label>
                   <div className="section-toggle">
                     <span className="toggle-icon">{collapsedSections.labor ? '▼' : '▲'}</span>
                   </div>
                 </div>
 
-                {!collapsedSections.labor && (
+                {false && (
                   <div className="labor-group">
                     <div className="labor-group-fields">
                       {/* Left column */}
