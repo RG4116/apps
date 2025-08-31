@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf'
+import { formatPrice } from "../priceCalculations"
 import {
   generateQuotationId,
   drawBarcode,
@@ -140,7 +141,7 @@ function safeSetFont(
 // Data interfaces for comprehensive PDF export
 // Moved to pdfUtils.ts to avoid duplication
 
-export const generateQuotationPDF = async (data: QuotationData, openInNewTab = false, language: 'tr' | 'en' = 'tr') => {
+export const generateQuotationPDF = async (data: QuotationData, openInNewTab = false, language: 'tr' | 'en' = 'tr', currency: string = "TRY") => {
   console.log('PDF Generation - Input Data:', data)
 
   // PDF text translations
@@ -463,7 +464,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     doc.setTextColor(120, 120, 120)
     safeText(doc, hasFont, t.mtulPrice, MARGIN_LEFT, y)
     doc.setTextColor(0, 0, 0)
-    safeText(doc, hasFont, `${data.price.toLocaleString('tr-TR')} TL`, MARGIN_LEFT + 25, y)
+    safeText(doc, hasFont, formatPrice(data.price, currency), MARGIN_LEFT + 25, y)
     y += 5
   }
 
@@ -507,7 +508,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       doc.setTextColor(120, 120, 120)
       safeText(doc, hasFont, `${t.depthTotal}:`, MARGIN_LEFT, y)
       doc.setTextColor(0, 0, 0)
-      safeText(doc, hasFont, `${depthTotal.toLocaleString('tr-TR')} TL`, MARGIN_LEFT + 120, y)
+      safeText(doc, hasFont, formatPrice(depthTotal, currency), MARGIN_LEFT + 120, y)
       y += 5
     }
     
@@ -550,7 +551,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       doc.setTextColor(120, 120, 120)
       safeText(doc, hasFont, `${t.panelTotal}:`, MARGIN_LEFT, y)
       doc.setTextColor(0, 0, 0)
-      safeText(doc, hasFont, `${panelTotal.toLocaleString('tr-TR')} TL`, MARGIN_LEFT + 85, y)
+      safeText(doc, hasFont, formatPrice(panelTotal, currency), MARGIN_LEFT + 85, y)
       y += 5
     }
     
@@ -593,7 +594,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       doc.setTextColor(120, 120, 120)
       safeText(doc, hasFont, `${t.hoodTotal}:`, MARGIN_LEFT, y)
       doc.setTextColor(0, 0, 0)
-      safeText(doc, hasFont, `${davlumbazTotal.toLocaleString('tr-TR')} TL`, MARGIN_LEFT + 85, y)
+      safeText(doc, hasFont, formatPrice(davlumbazTotal, currency), MARGIN_LEFT + 85, y)
       y += 5
     }
     
@@ -611,14 +612,14 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     if (data.supurgelik) {
       ensureRoom(4)
       safeText(doc, hasFont, `${t.baseboard}: ${data.supurgelik.tip}`, MARGIN_LEFT, y)
-      safeText(doc, hasFont, `${data.supurgelik.toplamFiyat.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      safeText(doc, hasFont, formatPrice(data.supurgelik.toplamFiyat, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       y += 4
     }
     
     if (data.eviye) {
       ensureRoom(4)
       safeText(doc, hasFont, `${t.sink}: ${data.eviye.tip}`, MARGIN_LEFT, y)
-      safeText(doc, hasFont, `${data.eviye.toplamFiyat.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      safeText(doc, hasFont, formatPrice(data.eviye.toplamFiyat, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       y += 4
     }
     
@@ -626,7 +627,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       ensureRoom(4)
       const translatedDetail = translateSpecialDetailForPdf(data.specialDetail.tip)
       safeText(doc, hasFont, `${t.specialDetail}: ${translatedDetail}`, MARGIN_LEFT, y)
-      safeText(doc, hasFont, `${data.specialDetail.toplamFiyat.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      safeText(doc, hasFont, formatPrice(data.specialDetail.toplamFiyat, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       y += 4
     }
     
@@ -645,7 +646,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
         ensureRoom(4)
         const translatedName = laborTranslations[service.name] || service.name
         safeText(doc, hasFont, translatedName, MARGIN_LEFT, y)
-        safeText(doc, hasFont, `${service.price.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+        safeText(doc, hasFont, formatPrice(service.price, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
         y += 4
       }
     })
@@ -661,7 +662,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       doc.setTextColor(120, 120, 120)
       safeText(doc, hasFont, 'İşçilik Toplam:', MARGIN_LEFT, y)
       doc.setTextColor(0, 0, 0)
-      safeText(doc, hasFont, `${data.labor.totalPrice.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      safeText(doc, hasFont, formatPrice(data.labor.totalPrice, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       y += 5
     }
     
@@ -754,7 +755,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     doc.setTextColor(120, 120, 120)
     safeText(doc, hasFont, `${t.discountedPrice}:`, MARGIN_LEFT, y)
     doc.setTextColor(0, 0, 0)
-    safeText(doc, hasFont, `${Math.max(0, discountedTotal).toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+    safeText(doc, hasFont, formatPrice(Math.max(0, discountedTotal), currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
     y += 6
   }
   
@@ -767,7 +768,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
   doc.setTextColor(120, 120, 120)
   safeText(doc, hasFont, `${t.vat} (%${kdvRate}):`, MARGIN_LEFT, y)
   doc.setTextColor(0, 0, 0)
-  safeText(doc, hasFont, `${kdvAmount.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+  safeText(doc, hasFont, formatPrice(kdvAmount, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
   y += 6
   
   // Final total line
@@ -783,7 +784,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
   doc.setTextColor(0, 0, 0)
   doc.setFontSize(14)
   safeSetFont(doc, hasFont, 'bold')
-  safeText(doc, hasFont, `${finalTotal.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+  safeText(doc, hasFont, formatPrice(finalTotal, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
   safeSetFont(doc, hasFont, 'normal')
   y += 15
 

@@ -1,7 +1,7 @@
 // Price calculation utilities - shared between main app and PWA - WORKING EDIT
 
 // Get thickness-based price multiplier following the specified pattern
-export const getThicknessPriceMultiplier = (thickness) => {
+export const getThicknessPriceMultiplier = (thickness: string): number => {
   // Base multipliers following the pattern (baseline: h:4cm + 65cm = base price):
   // h:4cm → 1.00 (base price - 65cm depth + h:4cm thickness)
   // h:1.5cm, h:1.2cm, h:2cm → 0.90 (discount for thinner than base)
@@ -35,7 +35,7 @@ export const getThicknessPriceMultiplier = (thickness) => {
 }
 
 // Get depth-based price multiplier following the specified pattern
-export const getDepthPriceMultiplier = (depth) => {
+export const getDepthPriceMultiplier = (depth: string): number => {
   // Base multipliers following the exact specification (baseline: 65cm):
   // 65cm → 1.000 (baseline)
   // 70cm → 1.165 (+16.5% from 65cm)
@@ -59,7 +59,7 @@ export const getDepthPriceMultiplier = (depth) => {
 }
 
 // Currency conversion multipliers
-export const getCurrencyMultiplier = (currency) => {
+export const getCurrencyMultiplier = (currency: string): number => {
   switch (currency) {
     case 'EUR':
       return 35 // EUR to TL
@@ -71,7 +71,7 @@ export const getCurrencyMultiplier = (currency) => {
 }
 
 // Category-based pricing multipliers
-export const getCategoryMultiplier = (category) => {
+export const getCategoryMultiplier = (category: string): number => {
   if (category === 'Porcelain') {
     return 1.2
   }
@@ -79,17 +79,52 @@ export const getCategoryMultiplier = (category) => {
 }
 
 // Calculate final base price with all multipliers
-export const calculateFinalBasePrice = (basePrice, currency, category) => {
+export const calculateFinalBasePrice = (basePrice: number, currency: string, category: string): number => {
   const currencyMultiplier = getCurrencyMultiplier(currency)
   const categoryMultiplier = getCategoryMultiplier(category)
   return basePrice * currencyMultiplier * categoryMultiplier
 }
 
 // Group multipliers for pricing tables
-export const getGroupMultipliers = () => [
+export const getGroupMultipliers = (): Array<{name: string; multiplier: number}> => [
   { name: 'GROUP 01', multiplier: 1.0 },
   { name: 'GROUP 02', multiplier: 1.125 },
   { name: 'GROUP 03', multiplier: 1.167 },
   { name: 'GROUP 04', multiplier: 1.229 },
   { name: 'GROUP 05', multiplier: 1.292 }
 ]
+
+// Format price with currency symbol based on the selected currency
+export const formatPrice = (price: number, currency: string = 'TRY'): string => {
+  const roundedPrice = Math.round(price) // Round to nearest whole number
+  
+  // Validate currency code - must be exactly 3 uppercase letters
+  const isValidCurrency = /^[A-Z]{3}$/.test(currency)
+  if (!isValidCurrency) {
+    console.warn(`Invalid currency code "${currency}", falling back to TRY`)
+    currency = 'TRY'
+  }
+  
+  // Determine locale based on currency
+  const locale = currency === 'EUR' ? 'de-DE' : 
+                 currency === 'USD' ? 'en-US' : 
+                 'tr-TR' // Default to Turkish locale
+  
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(roundedPrice)
+  } catch (error) {
+    console.error(`Error formatting price with currency ${currency}:`, error)
+    // Fallback to Turkish Lira formatting
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'TRY',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(roundedPrice)
+  }
+}

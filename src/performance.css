@@ -1,0 +1,41 @@
+/* Lightweight Performance CSS */
+
+/* Remove excessive animations */
+.glass-card {
+  animation: none !important;
+  transition: transform 0.2s ease !important;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Simplify input transitions */
+.input, .select {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* Hardware acceleration */
+.glass-card,
+.input,
+.select,
+.button {
+  will-change: auto;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Optimize for 60fps */
+* {
+  box-sizing: border-box;
+}
+
+/* Reduce repaints */
+.price-display {
+  contain: layout style paint;
+}
+
+/* Optimize background */
+.app {
+  background: #f8fafc !important; /* Solid color instead of gradient */
+}
