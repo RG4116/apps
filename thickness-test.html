@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thickness Pricing Test</title>
+    <script type="module">
+        // Test the thickness pricing calculation
+        function testThicknessPricing() {
+            console.log('🔍 Testing Thickness Pricing Calculation...');
+            
+            // Simulate the thickness pricing logic
+            const getThicknessPriceMultiplier = (thickness) => {
+                const normalizedThickness = thickness.replace(/[–—]/g, '-');
+                
+                if (normalizedThickness.includes('16-20') || normalizedThickness.includes('16–20')) {
+                    return 1.45; // Premium over base
+                } else if (normalizedThickness.includes('11-15') || normalizedThickness.includes('11–15')) {
+                    return 1.30; // Premium over base
+                } else if (normalizedThickness.includes('9-10') || normalizedThickness.includes('9–10')) {
+                    return 1.20; // Premium over base
+                } else if (normalizedThickness.includes('7-8') || normalizedThickness.includes('7–8')) {
+                    return 1.15; // Premium over base
+                } else if (normalizedThickness.includes('5-6') || normalizedThickness.includes('5–6')) {
+                    return 1.10; // Premium over base
+                } else if (normalizedThickness.toUpperCase().includes('STANDART')) {
+                    return 0.90; // STANDART gets discount pricing
+                } else if (normalizedThickness.includes('4')) {
+                    return 1.00; // Base price for h:4cm thickness
+                } else if (normalizedThickness.includes('1.5') || normalizedThickness.includes('1.2') || normalizedThickness.includes('2')) {
+                    return 0.90; // Discount for thinner than base (h:4cm) - DEPRECATED but kept for compatibility
+                }
+                
+                return 0.90; // Default to STANDART pricing (0.90x)
+            };
+            
+            // Test all thickness options
+            const thicknessOptions = [
+                'STANDART',
+                'h:4 cm',
+                'h:5–6 cm',
+                'h:7–8 cm',
+                'h:9–10 cm',
+                'h:11–15 cm',
+                'h:16–20 cm'
+            ];
+            
+            const basePrice = 1000; // Test with 1000 TL base price
+            
+            console.log(`\n📊 Thickness Pricing Test (Base Price: ${basePrice} TL):`);
+            console.log('='.repeat(50));
+            
+            thicknessOptions.forEach(thickness => {
+                const multiplier = getThicknessPriceMultiplier(thickness);
+                const finalPrice = basePrice * multiplier;
+                const discount = ((1 - multiplier) * 100).toFixed(1);
+                const markup = ((multiplier - 1) * 100).toFixed(1);
+                
+                let priceType;
+                if (multiplier < 1) {
+                    priceType = `${discount}% İNDİRİM`;
+                } else if (multiplier > 1) {
+                    priceType = `+${markup}% ARTI`;
+                } else {
+                    priceType = 'BASE FİYAT';
+                }
+                
+                console.log(`${thickness.padEnd(15)} → x${multiplier.toFixed(2)} = ${finalPrice.toLocaleString('tr-TR')} TL (${priceType})`);
+            });
+            
+            console.log('\n✅ Key Points:');
+            console.log('• STANDART: 0.90x (10% discount) - Most affordable option');
+            console.log('• h:4 cm: 1.00x (base price) - Reference point');
+            console.log('• Higher thicknesses get premium pricing');
+            
+            console.log('\n🎯 STANDART is now the default and most economical choice!');
+        }
+        
+        // Auto-run test
+        setTimeout(testThicknessPricing, 1000);
+        
+        // Make function globally available
+        window.testThicknessPricing = testThicknessPricing;
+    </script>
+</head>
+<body>
+    <h1>Thickness Pricing Test</h1>
+    <p>Testing the new STANDART pricing system (0.90x multiplier)</p>
+    <button onclick="testThicknessPricing()">Run Test</button>
+    
+    <h2>Expected Results:</h2>
+    <ul>
+        <li><strong>STANDART:</strong> 0.90x (10% discount - most affordable)</li>
+        <li><strong>h:4 cm:</strong> 1.00x (base price)</li>
+        <li><strong>h:5–6 cm:</strong> 1.10x (+10% premium)</li>
+        <li><strong>h:7–8 cm:</strong> 1.15x (+15% premium)</li>
+        <li><strong>h:9–10 cm:</strong> 1.20x (+20% premium)</li>
+        <li><strong>h:11–15 cm:</strong> 1.30x (+30% premium)</li>
+        <li><strong>h:16–20 cm:</strong> 1.45x (+45% premium)</li>
+    </ul>
+    
+    <p><strong>Note:</strong> STANDART is now the default option for all products, giving customers the most economical choice by default.</p>
+</body>
+</html>

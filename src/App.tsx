@@ -184,7 +184,7 @@ function App() {
     tarih: getTodayFormatted(), // Set today's date in DD/MM/YYYY format
     urun: '',
     renk: '',
-    tezgahKalinlik: 'h:5–6 cm', // Set default value
+    tezgahKalinlik: 'STANDART', // New default: STANDART (0.90x pricing)
     supurgelik: {
       tip: '',
       mtul: 1,
@@ -331,7 +331,7 @@ function App() {
         // Only clear color selection if it no longer exists in the updated data
         // This preserves user selections during product changes
         if (formData.renk && !filtered.find(c => c.id === formData.renk)) {
-          setFormData(prev => ({ ...prev, renk: '', tezgahKalinlik: 'h:5–6 cm' }))
+          setFormData(prev => ({ ...prev, renk: '', tezgahKalinlik: 'STANDART' }))
         }
       }
     }
@@ -377,7 +377,7 @@ function App() {
           newData.renk = ''
         }
         // Always reset thickness when product changes for consistency
-        newData.tezgahKalinlik = 'h:5–6 cm'
+        newData.tezgahKalinlik = 'STANDART'
         
         // Validate and update depth groups for the new product (handle Dekton vs non-Dekton)
         newData.depthGroups = validateDepthGroups(value).map(group => ({
@@ -453,7 +453,7 @@ function App() {
       
       // Reset tezgah kalinlik when color changes
       if (name === 'renk') {
-        newData.tezgahKalinlik = 'h:5–6 cm' // Reset to default
+        newData.tezgahKalinlik = 'STANDART' // Reset to new default
       }
       
       return newData
@@ -468,7 +468,7 @@ function App() {
       tarih: getTodayFormatted(), // Reset to today's date in DD/MM/YYYY format
       urun: '',
       renk: '',
-      tezgahKalinlik: 'h:5–6 cm',
+      tezgahKalinlik: 'STANDART',
       supurgelik: {
         tip: '',
         mtul: 1,
@@ -703,6 +703,7 @@ function App() {
   // Get automatic skirting band based on front-edge thickness
   const getAutomaticSkirtingBand = (thickness: string): string => {
     // Band selection links to the chosen front-edge thickness:
+    // STANDART and h:4 cm → H:05–H:10 band (new default)
     // 5–6 cm edge → H:05–H:10 band
     // 7–8 or 9–10 cm → H:11–H:20 band
     // 11–15 cm → H:11–H:20 band  
@@ -711,7 +712,8 @@ function App() {
     // Normalize thickness string for parsing (handle different dash types)
     const normalizedThickness = thickness.replace(/[–—]/g, '-')
     
-    if (normalizedThickness.includes('5-6') || normalizedThickness.includes('5–6')) {
+    if (normalizedThickness.includes('4') || normalizedThickness.toUpperCase().includes('STANDART') ||
+        normalizedThickness.includes('5-6') || normalizedThickness.includes('5–6')) {
       return 'H:05–H:10'
     } else if (normalizedThickness.includes('7-8') || normalizedThickness.includes('7–8') ||
                normalizedThickness.includes('9-10') || normalizedThickness.includes('9–10')) {
@@ -722,7 +724,7 @@ function App() {
       return 'H:21–H:30'
     }
     
-    // Default for standard thicknesses (1.5cm, 2cm, 5-6cm, etc.)
+    // Default for standard thicknesses - now defaults to h:4cm behavior
     return 'H:05–H:10'
   }
 
@@ -1230,26 +1232,14 @@ function App() {
   }
 
   // Get product-specific height
-  const getProductHeight = (): string => {
-    if (!getSelectedProduct()) return 'h:1.2 cm'
-    
-    const productName = getSelectedProduct()?.name.toLowerCase() || ""
-    
-    if (productName.includes('belenco') || productName.includes('lamar')) {
-      return 'h:1.5 cm'
-    } else if (productName.includes('çimstone') || productName.includes('coante')) {
-      return 'h:2 cm'
-    } else {
-      return 'h:1.2 cm'
-    }
-  }
+  // Removed getProductHeight function - all products now use standard thickness options
 
   // Export form data as PDF quotation
   const handleExportPDF = async (openInNewTab: boolean = false) => {
     const selectedColor = getSelectedColor()
     const productName = products.find(p => p.id === formData.urun)?.name || ''
     const colorName = selectedColor?.name || ''
-    const height = formData.tezgahKalinlik || getProductHeight()
+    const height = formData.tezgahKalinlik || 'STANDART' // Default to STANDART if no selection
     const price = selectedColor?.price ? parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) : 0
 
     // Calculate final totals
@@ -1523,7 +1513,8 @@ function App() {
                   <option value="">
                     {!formData.renk ? t('onceRenkSeciniz') : t('kalinlikSeciniz')}
                   </option>
-                  <option value={getProductHeight()}>{getProductHeight()}</option>
+                  <option value="STANDART">STANDART</option>
+                  <option value="h:4 cm">h:4 cm</option>
                   <option value="h:5–6 cm">h:5–6 cm</option>
                   <option value="h:7–8 cm">h:7–8 cm</option>
                   <option value="h:9–10 cm">h:9–10 cm</option>

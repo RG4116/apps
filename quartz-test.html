@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quartz/Porselen Test</title>
+    <script type="module">
+        // Test the categorization
+        async function testQuartzPorcelain() {
+            console.log('🔍 Testing Quartz/Porselen categorization...');
+            
+            const url = 'https://script.google.com/macros/s/AKfycbx32lxWnsQF8kgk8zajWKf2n23dhGL5-6xbBDj-QVJRpOpzlN_NwTiTpik6LCCD4yu53w/exec?sheet=Products';
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('📊 Raw Google Sheets data:');
+                data.forEach(item => {
+                    console.log(`- ${item['Ürün Adı']}: ${item['Taş tipi']} (${item['Para Birimi']})`);
+                });
+                
+                // Test categorization function
+                const categorizeStone = (productName, stoneType) => {
+                    // First check if we have explicit stone type from Google Sheets
+                    if (stoneType) {
+                        const normalizedType = stoneType.toUpperCase();
+                        if (normalizedType.includes('QUARTZ') || normalizedType.includes('KUVARS')) {
+                            return 'Quartz';
+                        }
+                        if (normalizedType.includes('PORCELAIN') || normalizedType.includes('PORSELEN')) {
+                            return 'Porcelain';
+                        }
+                    }
+                    
+                    // Fallback to name-based categorization
+                    const name = productName.toUpperCase();
+                    
+                    // Quartz stones
+                    if (name.includes('BELENCO') || 
+                        name.includes('ÇIMSTONE') || 
+                        name.includes('COANTE') ||
+                        name.includes('SILESTONE') ||
+                        name.includes('T-ONE')) {
+                        return 'Quartz';
+                    }
+                    
+                    // Porcelain stones (default for most)
+                    if (name.includes('ANATOLIA') ||
+                        name.includes('AVANTE') ||
+                        name.includes('DEKTON') ||
+                        name.includes('FLORIM') ||
+                        name.includes('INFINITY') ||
+                        name.includes('LAMAR') ||
+                        name.includes('LAMINAM') ||
+                        name.includes('LEVEL') ||
+                        name.includes('MATERIA') ||
+                        name.includes('MYTOP') ||
+                        name.includes('NEOLITH') ||
+                        name.includes('NG STONE')) {
+                        return 'Porcelain';
+                    }
+                    
+                    // Default to Porcelain if not specified
+                    return 'Porcelain';
+                };
+                
+                console.log('\n🔄 Testing categorization function:');
+                data.forEach(item => {
+                    const productName = item['Ürün Adı'];
+                    const stoneType = item['Taş tipi'];
+                    const category = categorizeStone(productName, stoneType);
+                    
+                    console.log(`✅ ${productName} (${stoneType}) → ${category}`);
+                });
+                
+                // Summary
+                const quartzCount = data.filter(p => categorizeStone(p['Ürün Adı'], p['Taş tipi']) === 'Quartz').length;
+                const porcelainCount = data.filter(p => categorizeStone(p['Ürün Adı'], p['Taş tipi']) === 'Porcelain').length;
+                
+                console.log(`\n📊 SUMMARY:`);
+                console.log(`🔹 Quartz Products: ${quartzCount}`);
+                console.log(`🔹 Porcelain Products: ${porcelainCount}`);
+                console.log(`🔹 Total Products: ${data.length}`);
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+            }
+        }
+        
+        // Auto-run test
+        setTimeout(testQuartzPorcelain, 1000);
+        
+        // Make function globally available
+        window.testQuartzPorcelain = testQuartzPorcelain;
+    </script>
+</head>
+<body>
+    <h1>Quartz/Porselen Categorization Test</h1>
+    <p>Check the browser console for test results.</p>
+    <button onclick="testQuartzPorcelain()">Run Test</button>
+</body>
+</html>

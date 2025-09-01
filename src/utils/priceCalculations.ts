@@ -3,8 +3,9 @@
 // Get thickness-based price multiplier following the specified pattern
 export const getThicknessPriceMultiplier = (thickness: string): number => {
   // Base multipliers following the pattern (baseline: h:4cm + 65cm = base price):
+  // STANDART → 0.90 (discount pricing for standard option)
   // h:4cm → 1.00 (base price - 65cm depth + h:4cm thickness)
-  // h:1.5cm, h:1.2cm, h:2cm → 0.90 (discount for thinner than base)
+  // h:1.5cm, h:1.2cm, h:2cm → 0.90 (discount for thinner than base) - DEPRECATED
   // 5–6 cm → 1.10 (premium over base)
   // 7–8 cm → 1.15 (premium over base) 
   // 9–10 cm → 1.20 (premium over base)
@@ -25,13 +26,15 @@ export const getThicknessPriceMultiplier = (thickness: string): number => {
     return 1.15 // Premium over base
   } else if (normalizedThickness.includes('5-6') || normalizedThickness.includes('5–6')) {
     return 1.10 // Premium over base
+  } else if (normalizedThickness.toUpperCase().includes('STANDART')) {
+    return 0.90 // STANDART gets discount pricing
   } else if (normalizedThickness.includes('4')) {
     return 1.00 // Base price for h:4cm thickness
   } else if (normalizedThickness.includes('1.5') || normalizedThickness.includes('1.2') || normalizedThickness.includes('2')) {
-    return 0.90 // Discount for thinner than base (h:4cm)
+    return 0.90 // Discount for thinner than base (h:4cm) - DEPRECATED but kept for compatibility
   }
   
-  return 1.00 // Default to base price (h:5-6cm)
+  return 0.90 // Default to STANDART pricing (0.90x)
 }
 
 // Get depth-based price multiplier following the specified pattern
