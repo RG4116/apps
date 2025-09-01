@@ -558,8 +558,13 @@ function App() {
               // Convert price string to number and apply depth-based and thickness multipliers
               const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
               const depthMultiplier = getDepthPriceMultiplier(value)
-              const thicknessMultiplier = getThicknessPriceMultiplier(prev.tezgahKalinlik)
-              updated.birimFiyati = basePrice * depthMultiplier * thicknessMultiplier
+              
+              // Check for Evdema special pricing or normal thickness-based pricing
+              const adjustedPrice = prev.firmaBayi && prev.firmaBayi.toLowerCase().includes('evdema') 
+                ? basePrice * 0.59 * 1.80 // Evdema special pricing
+                : basePrice * getThicknessPriceMultiplier(prev.tezgahKalinlik) // Normal thickness-based pricing
+              
+              updated.birimFiyati = adjustedPrice * depthMultiplier
             } else {
               updated.birimFiyati = 0
             }
@@ -597,7 +602,13 @@ function App() {
     const selectedColor = getSelectedColor()
     if (selectedColor?.price) {
       const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-      newPanel.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for panels
+      
+      // Check for Evdema special pricing or normal thickness-based pricing
+      const adjustedPrice = formData.firmaBayi && formData.firmaBayi.toLowerCase().includes('evdema') 
+        ? basePrice * 0.59 * 1.80 // Evdema special pricing
+        : basePrice * getThicknessPriceMultiplier(formData.tezgahKalinlik) // Normal thickness-based pricing
+      
+      newPanel.birimFiyati = adjustedPrice * 1.25 // Apply 1.25x multiplier for panels
     }
     
     setFormData(prev => ({
@@ -625,7 +636,13 @@ function App() {
             const selectedColor = getSelectedColor()
             if (selectedColor?.price) {
               const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-              updated.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for panels
+              
+              // Check for Evdema special pricing or normal thickness-based pricing
+              const adjustedPrice = prev.firmaBayi && prev.firmaBayi.toLowerCase().includes('evdema') 
+                ? basePrice * 0.59 * 1.80 // Evdema special pricing
+                : basePrice * getThicknessPriceMultiplier(prev.tezgahKalinlik) // Normal thickness-based pricing
+              
+              updated.birimFiyati = adjustedPrice * 1.25 // Apply 1.25x multiplier for panels
             }
           }
           
@@ -656,7 +673,13 @@ function App() {
     const selectedColor = getSelectedColor()
     if (selectedColor?.price) {
       const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-      newDavlumbaz.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for davlumbaz panels
+      
+      // Check for Evdema special pricing or normal thickness-based pricing
+      const adjustedPrice = formData.firmaBayi && formData.firmaBayi.toLowerCase().includes('evdema') 
+        ? basePrice * 0.59 * 1.80 // Evdema special pricing
+        : basePrice * getThicknessPriceMultiplier(formData.tezgahKalinlik) // Normal thickness-based pricing
+      
+      newDavlumbaz.birimFiyati = adjustedPrice * 1.25 // Apply 1.25x multiplier for davlumbaz panels
     }
     
     setFormData(prev => ({
@@ -684,7 +707,13 @@ function App() {
             const selectedColor = getSelectedColor()
             if (selectedColor?.price) {
               const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-              updated.birimFiyati = basePrice * 1.25 // Apply 1.25x multiplier for davlumbaz panels
+              
+              // Check for Evdema special pricing or normal thickness-based pricing
+              const adjustedPrice = prev.firmaBayi && prev.firmaBayi.toLowerCase().includes('evdema') 
+                ? basePrice * 0.59 * 1.80 // Evdema special pricing
+                : basePrice * getThicknessPriceMultiplier(prev.tezgahKalinlik) // Normal thickness-based pricing
+              
+              updated.birimFiyati = adjustedPrice * 1.25 // Apply 1.25x multiplier for davlumbaz panels
             }
           }
           
@@ -746,7 +775,11 @@ function App() {
     if (!selectedColor?.price) return 0
     
     const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-    const h15cmPrice = basePrice * getThicknessPriceMultiplier('h:1.5 cm')
+    
+    // Check for Evdema special pricing or normal thickness-based pricing for h:1.5 cm
+    const h15cmPrice = formData.firmaBayi && formData.firmaBayi.toLowerCase().includes('evdema') 
+      ? basePrice * 0.59 * 1.80 // Evdema special pricing
+      : basePrice * getThicknessPriceMultiplier('h:1.5 cm') // Normal thickness-based pricing
     
     // Get selected product's currency and apply conversion
     
@@ -1183,13 +1216,18 @@ function App() {
     return currency
   }
 
-  // Calculate adjusted price based on thickness multiplier
+  // Calculate adjusted price based on thickness multiplier and Evdema special pricing
   const getAdjustedPrice = (): number => {
     const selectedColor = getSelectedColor()
     if (!selectedColor?.price || !formData.tezgahKalinlik) return 0
 
-    
     const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+    
+    // Check for Evdema special pricing (case-insensitive)
+    if (formData.firmaBayi && formData.firmaBayi.toLowerCase().includes('evdema')) {
+      return basePrice * 0.59 * 1.80 // Special Evdema pricing: x0.59x1.80 = 1.062
+    }
+    
     const thicknessMultiplier = getThicknessPriceMultiplier(formData.tezgahKalinlik)
     return basePrice * thicknessMultiplier
   }
@@ -1362,6 +1400,63 @@ function App() {
       }
     }
   }, [products, allColors]) // Run when products or colors are loaded
+
+  // Update all prices when firmaBayi changes (for Evdema special pricing)
+  useEffect(() => {
+    if (formData.firmaBayi && formData.renk && (formData.depthGroups.length > 0 || formData.panelGroups.length > 0 || formData.davlumbazGroups.length > 0 || formData.supurgelik.tip || formData.eviye.tip || formData.specialDetail.tip)) {
+      const selectedColor = getSelectedColor()
+      
+      if (selectedColor?.price) {
+        const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+        
+        // Calculate the adjusted price based on Evdema or normal pricing
+        const adjustedPrice = formData.firmaBayi.toLowerCase().includes('evdema') 
+          ? basePrice * 0.59 * 1.80 // Evdema special pricing
+          : basePrice * getThicknessPriceMultiplier(formData.tezgahKalinlik) // Normal thickness-based pricing
+        
+        setFormData(prev => ({
+          ...prev,
+          // Update depth groups with new adjusted price
+          depthGroups: prev.depthGroups.map(group => {
+            if (group.derinlik) {
+              const depthMultiplier = getDepthPriceMultiplier(group.derinlik)
+              const finalPrice = adjustedPrice * depthMultiplier
+              return {
+                ...group,
+                birimFiyati: finalPrice,
+                toplamFiyat: group.mtul * finalPrice
+              }
+            }
+            return group
+          }),
+          // Update panel groups with adjusted price
+          panelGroups: prev.panelGroups.map(group => {
+            if (group.metrekare > 0) {
+              const panelPrice = adjustedPrice * 1.25 // 1.25x for panel
+              return {
+                ...group,
+                birimFiyati: panelPrice,
+                toplamFiyat: group.metrekare * panelPrice
+              }
+            }
+            return group
+          }),
+          // Update davlumbaz groups with adjusted price
+          davlumbazGroups: prev.davlumbazGroups.map(group => {
+            if (group.metrekare > 0) {
+              const davlumbazPrice = adjustedPrice * 1.25 // 1.25x for davlumbaz
+              return {
+                ...group,
+                birimFiyati: davlumbazPrice,
+                toplamFiyat: group.metrekare * davlumbazPrice
+              }
+            }
+            return group
+          })
+        }))
+      }
+    }
+  }, [formData.firmaBayi])
 
   return (
     <div className="app">
