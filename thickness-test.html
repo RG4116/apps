@@ -29,7 +29,7 @@
                     return 0.90; // Discount for thinner than base (h:4cm) - DEPRECATED but kept for compatibility
                 }
                 
-                return 0.90; // Default to STANDART pricing (0.90x)
+                return 1.00; // Default to h:4 cm base pricing (1.00x)
             };
             
             // Test all thickness options
@@ -71,7 +71,7 @@
             console.log('• h:4 cm: 1.00x (base price) - Reference point');
             console.log('• Higher thicknesses get premium pricing');
             
-            console.log('\n🎯 STANDART is now the default and most economical choice!');
+            console.log('\n🎯 h:4 cm is now the default with base pricing (1.00x), while STANDART offers discount pricing (0.90x)!');
         }
         
         // Auto-run test
@@ -97,6 +97,6 @@
         <li><strong>h:16–20 cm:</strong> 1.45x (+45% premium)</li>
     </ul>
     
-    <p><strong>Note:</strong> STANDART is now the default option for all products, giving customers the most economical choice by default.</p>
+    <p><strong>Note:</strong> h:4 cm is now the default option for all products, providing the base price (1.00x). STANDART offers a 10% discount (0.90x).</p>
 </body>
 </html>

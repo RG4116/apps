@@ -184,7 +184,7 @@ function App() {
     tarih: getTodayFormatted(), // Set today's date in DD/MM/YYYY format
     urun: '',
     renk: '',
-    tezgahKalinlik: 'STANDART', // New default: STANDART (0.90x pricing)
+    tezgahKalinlik: 'h:4 cm', // Default: h:4 cm (1.00x base pricing)
     supurgelik: {
       tip: '',
       mtul: 1,
@@ -331,7 +331,7 @@ function App() {
         // Only clear color selection if it no longer exists in the updated data
         // This preserves user selections during product changes
         if (formData.renk && !filtered.find(c => c.id === formData.renk)) {
-          setFormData(prev => ({ ...prev, renk: '', tezgahKalinlik: 'STANDART' }))
+          setFormData(prev => ({ ...prev, renk: '', tezgahKalinlik: 'h:4 cm' }))
         }
       }
     }
@@ -377,7 +377,7 @@ function App() {
           newData.renk = ''
         }
         // Always reset thickness when product changes for consistency
-        newData.tezgahKalinlik = 'STANDART'
+        newData.tezgahKalinlik = 'h:4 cm'
         
         // Validate and update depth groups for the new product (handle Dekton vs non-Dekton)
         newData.depthGroups = validateDepthGroups(value).map(group => ({
@@ -453,7 +453,7 @@ function App() {
       
       // Reset tezgah kalinlik when color changes
       if (name === 'renk') {
-        newData.tezgahKalinlik = 'STANDART' // Reset to new default
+        newData.tezgahKalinlik = 'h:4 cm' // Reset to default
       }
       
       return newData
@@ -468,7 +468,7 @@ function App() {
       tarih: getTodayFormatted(), // Reset to today's date in DD/MM/YYYY format
       urun: '',
       renk: '',
-      tezgahKalinlik: 'STANDART',
+      tezgahKalinlik: 'h:4 cm',
       supurgelik: {
         tip: '',
         mtul: 1,
@@ -1239,7 +1239,7 @@ function App() {
     const selectedColor = getSelectedColor()
     const productName = products.find(p => p.id === formData.urun)?.name || ''
     const colorName = selectedColor?.name || ''
-    const height = formData.tezgahKalinlik || 'STANDART' // Default to STANDART if no selection
+    const height = formData.tezgahKalinlik || 'h:4 cm' // Default to h:4 cm if no selection
     const price = selectedColor?.price ? parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) : 0
 
     // Calculate final totals

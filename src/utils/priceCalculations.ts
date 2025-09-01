@@ -34,7 +34,7 @@ export const getThicknessPriceMultiplier = (thickness: string): number => {
     return 0.90 // Discount for thinner than base (h:4cm) - DEPRECATED but kept for compatibility
   }
   
-  return 0.90 // Default to STANDART pricing (0.90x)
+  return 1.00 // Default to h:4 cm base pricing (1.00x)
 }
 
 // Get depth-based price multiplier following the specified pattern
