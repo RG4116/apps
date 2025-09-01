@@ -80,7 +80,7 @@ const POLL_INTERVAL = 5 * 1000; // Check for updates every 5 seconds
 const RETRY_DELAYS = [1000, 2000, 5000]; // Progressive retry delays
 
 // Enhanced polling state
-let pollingInterval: number | null = null;
+let pollingInterval: NodeJS.Timeout | null = null;
 let retryCount = 0;
 let currentVersion = 0;
 let onDataUpdateCallback: ((data: { products: Product[]; colors: Color[] }) => void) | null = null;
@@ -158,6 +158,41 @@ function isCacheStale(): boolean {
 export const clearCache = (): void => {
   localStorage.removeItem(CACHE_KEY);
   console.log('🗑️ Cache cleared - fresh data will be loaded on next request');
+};
+
+// Debug function to test and clear everything
+export const debugGoogleSheets = async (): Promise<any> => {
+  console.log('🔍 DEBUG: Testing Google Sheets connection...');
+  
+  // Clear cache first
+  clearCache();
+  
+  // Test URLs directly
+  console.log('📍 Testing URLs:');
+  console.log('  Products:', PRODUCTS_URL);
+  console.log('  Colors:', COLORS_URL);
+  
+  try {
+    const [prodRes, colRes] = await Promise.all([
+      fetch(PRODUCTS_URL).then(r => r.json()),
+      fetch(COLORS_URL).then(r => r.json())
+    ]);
+    
+    console.log('✅ Raw Products data:', prodRes);
+    console.log('✅ Raw Colors data:', colRes);
+    
+    // Test normalization
+    const normalizedProds = prodRes.map(normalizeProduct).filter(Boolean);
+    const normalizedCols = colRes.map(normalizeColor).filter(Boolean);
+    
+    console.log('🔄 Normalized Products:', normalizedProds);
+    console.log('🔄 Normalized Colors:', normalizedCols);
+    
+    return { products: normalizedProds, colors: normalizedCols };
+  } catch (error) {
+    console.error('❌ Debug test failed:', error);
+    throw error;
+  }
 };
 
 // Force refresh data immediately (clears cache and fetches new data)
@@ -248,12 +283,12 @@ const findKey = (obj: Record<string, any>, candidates: string[]): string | null 
 
 // Normalize one product row object from server → Product
 const normalizeProduct = (row: Record<string, any>): Product | null => {
-  // Common header variants (TR/EN)
-  const idKey = findKey(row, ['id', 'ıd', 'ürün id', 'urun id', 'productid', 'product id']);
-  const nameKey = findKey(row, ['name', 'ad', 'adı', 'urun', 'ürün', 'ürün adı', 'urun adı', 'product', 'product name']);
-  const activeKey = findKey(row, ['active', 'aktif']);
-  const stoneTypeKey = findKey(row, ['stonetype', 'stone type', 'taş tipi', 'tas tipi', 'stone_type']);
-  const currencyKey = findKey(row, ['currency', 'para birimi', 'para_birimi']);
+  // Common header variants (TR/EN) - updated for actual Google Sheets headers
+  const idKey = findKey(row, ['id', 'ıd', 'ID', 'ürün id', 'urun id', 'productid', 'product id']);
+  const nameKey = findKey(row, ['name', 'ad', 'adı', 'urun', 'ürün', 'ürün adı', 'Ürün Adı', 'urun adı', 'product', 'product name']);
+  const activeKey = findKey(row, ['active', 'aktif', 'Aktif']);
+  const stoneTypeKey = findKey(row, ['stonetype', 'stone type', 'taş tipi', 'Taş tipi', 'tas tipi', 'stone_type']);
+  const currencyKey = findKey(row, ['currency', 'para birimi', 'Para Birimi', 'para_birimi']);
 
   // Exclude inactive
   if (activeKey && String(row[activeKey]) === 'Hayır') return null;
@@ -310,14 +345,15 @@ const normalizeProduct = (row: Record<string, any>): Product | null => {
 
 // Normalize one color row object from server → Color
 const normalizeColor = (row: Record<string, any>): Color | null => {
-  const idKey = findKey(row, ['id', 'ıd', 'renk id', 'color id']);
-  const nameKey = findKey(row, ['name', 'renk', 'renk adı', 'color', 'color name']);
-  const productIdKey = findKey(row, ['productid', 'product id', 'ürün id', 'urun id', 'product']);
-  const priceKey = findKey(row, ['price', 'fiyat']);
+  // Updated for actual Google Sheets headers
+  const idKey = findKey(row, ['id', 'ıd', 'ID', 'ID ', 'renk id', 'color id']);
+  const nameKey = findKey(row, ['name', 'renk', 'renk adı', 'Renk Adı', 'color', 'color name']);
+  const productIdKey = findKey(row, ['productid', 'product id', 'ürün id', 'Ürün ID', 'urun id', 'product']);
+  const priceKey = findKey(row, ['price', 'fiyat', 'Fiyat']);
   const currencyKey = findKey(row, ['currency', 'para birimi', 'para_birimi']);
-  const hexKey = findKey(row, ['hexcolor', 'hex', 'hex_color', 'renk kodu']);
+  const hexKey = findKey(row, ['hexcolor', 'hex', 'hex_color', 'renk kodu', 'Renk Kodu']);
   const imgKey = findKey(row, ['imageurl', 'image', 'image_url', 'resim', 'görsel']);
-  const activeKey = findKey(row, ['active', 'aktif']);
+  const activeKey = findKey(row, ['active', 'aktif', 'Aktif']);
 
   if (activeKey && String(row[activeKey]) === 'Hayır') return null;
 
@@ -336,7 +372,7 @@ const normalizeColor = (row: Record<string, any>): Color | null => {
   }
 
   return {
-    id: String(row[idKey] ?? '').trim(),
+    id: String(row[idKey] ?? '').trim().replace(/\s+$/, ''), // Remove trailing spaces
     name: String(row[nameKey] ?? '').trim(),
     productId: String(row[productIdKey] ?? '').trim(),
     price: String((row[priceKey!] ?? '0')).toString(),
