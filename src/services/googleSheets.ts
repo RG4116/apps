@@ -80,7 +80,7 @@ const POLL_INTERVAL = 5 * 1000; // Check for updates every 5 seconds
 const RETRY_DELAYS = [1000, 2000, 5000]; // Progressive retry delays
 
 // Enhanced polling state
-let pollingInterval: NodeJS.Timeout | null = null;
+let pollingInterval: number | null = null;
 let retryCount = 0;
 let currentVersion = 0;
 let onDataUpdateCallback: ((data: { products: Product[]; colors: Color[] }) => void) | null = null;
@@ -207,7 +207,7 @@ export const startRealTimeUpdates = (callback: (data: { products: Product[]; col
   
   // Clear any existing interval
   if (pollingInterval) {
-    clearInterval(pollingInterval);
+    window.clearInterval(pollingInterval);
   }
   
   if (!isOnline) {
@@ -244,15 +244,15 @@ export const startRealTimeUpdates = (callback: (data: { products: Product[]; col
         console.log('🛑 Too many polling errors - increasing interval');
         // Temporarily increase polling interval
         if (pollingInterval) {
-          clearInterval(pollingInterval);
-          pollingInterval = setInterval(poll, POLL_INTERVAL * 2);
+          window.clearInterval(pollingInterval);
+          pollingInterval = window.setInterval(poll, POLL_INTERVAL * 2);
         }
       }
     }
   };
   
   // Start polling
-  pollingInterval = setInterval(poll, POLL_INTERVAL);
+  pollingInterval = window.setInterval(poll, POLL_INTERVAL);
   
   console.log('✅ Enhanced real-time updates started');
 };
@@ -260,7 +260,7 @@ export const startRealTimeUpdates = (callback: (data: { products: Product[]; col
 // Stop real-time polling
 export const stopRealTimeUpdates = (): void => {
   if (pollingInterval) {
-    clearInterval(pollingInterval);
+    window.clearInterval(pollingInterval);
     pollingInterval = null;
   }
   onDataUpdateCallback = null;
