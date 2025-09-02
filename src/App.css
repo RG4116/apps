@@ -5,12 +5,14 @@
   max-width: 100vw;
   min-height: 100vh;
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: var(--space-md);
   container-type: inline-size;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  position: relative; /* Bu önemli - fixed positioning için referans */
 }
 
 .form-container {
@@ -126,7 +128,7 @@
   color: white;
   font-size: 1rem;
   font-weight: 600;
-  font-family: var(--font-primary);
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   letter-spacing: -0.025em;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -242,11 +244,12 @@
   font-weight: 600;
   color: var(--accent-color);
   font-size: 1.1rem;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .price-display .price-placeholder {
   color: var(--text-secondary);
-  font-style: italic;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .label {
@@ -262,7 +265,7 @@
   line-height: 1.3;
   word-wrap: break-word;
   hyphens: auto;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .input {
@@ -274,7 +277,7 @@
   backdrop-filter: blur(10px);
   color: #111827; /* Apple's dark text */
   font-size: 16px; /* Ensures no zoom on iOS */
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Apple's easing */
   box-shadow: 
     0 1px 3px rgba(0, 0, 0, 0.1),
@@ -494,7 +497,7 @@ select.input.select {
   color: white;
   font-size: 1.125rem; /* 18px */
   font-weight: 600;
-  font-family: var(--font-primary);
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   letter-spacing: -0.025em;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -521,7 +524,7 @@ select.input.select {
   color: white;
   font-size: 1.125rem; /* 18px */
   font-weight: 600;
-  font-family: var(--font-primary);
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   letter-spacing: -0.025em;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -593,7 +596,7 @@ select.input.select {
   color: white;
   font-size: 1rem;
   font-weight: 600;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
@@ -688,7 +691,7 @@ select.input.select {
 .depth-header .label {
   text-align: left;
   min-height: auto;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -703,6 +706,7 @@ select.input.select {
   border-radius: 12px;
   font-size: 0.875rem;
   font-weight: 600;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
@@ -747,6 +751,7 @@ select.input.select {
   border-radius: 12px;
   font-size: 0.875rem;
   font-weight: 600;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
@@ -810,6 +815,7 @@ select.input.select {
   font-weight: 600;
   color: #1f2937;
   font-size: 1rem;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .remove-btn {
@@ -903,7 +909,7 @@ select.input.select {
 .panel-header .label {
   text-align: left;
   min-height: auto;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -931,6 +937,7 @@ select.input.select {
   font-weight: 600;
   color: #1f2937;
   font-size: 1rem;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .panel-group-fields {
@@ -1003,7 +1010,7 @@ select.input.select {
 .davlumbaz-header .label {
   text-align: left;
   min-height: auto;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -1031,6 +1038,7 @@ select.input.select {
   font-weight: 600;
   color: #1f2937;
   font-size: 1rem;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 .davlumbaz-group-fields {
@@ -1076,7 +1084,7 @@ select.input.select {
 .supurgelik-header .label {
   text-align: left;
   min-height: auto;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -1137,7 +1145,7 @@ select.input.select {
 .eviye-header .label {
   text-align: left;
   min-height: auto;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -1249,7 +1257,7 @@ select.input.select {
   .davlumbaz-header .label,
   .supurgelik-header .label,
   .eviye-header .label {
-    font-size: 1rem;
+    font-size: 0.875rem;
     line-height: 1.2;
     flex: 1;
     padding-right: 1rem;
@@ -1368,6 +1376,7 @@ select.input.select {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   flex: 1;
   line-height: 1.4;
 }
@@ -1496,6 +1505,7 @@ input:focus + .toggle-slider {
 .detail-image-caption {
   font-weight: 500;
   color: var(--text-primary);
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   text-align: center;
   font-size: 0.7rem;
   margin: 0;
@@ -1633,10 +1643,11 @@ input:focus + .toggle-slider {
   gap: var(--space-sm);
 }
 
-.discount-inputs-row .input-group .label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+.discount-section .discount-inputs-row .input-group .label {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
   margin-bottom: var(--space-xs);
   text-transform: uppercase;
   letter-spacing: 0.025em;
@@ -1655,20 +1666,26 @@ input:focus + .toggle-slider {
   gap: var(--space-xs);
 }
 
-.value-group .label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+.discount-section .value-group .label {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
   text-transform: uppercase;
   letter-spacing: 0.025em;
   margin-bottom: var(--space-xs);
 }
 
 /* Special styling for final price in discount section */
+.discount-section .price-display .price {
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+}
+
 .discount-values-row .price-display .price.final-price {
-  color: var(--accent-color);
-  font-weight: 700;
-  font-size: 1.125rem;
+  color: var(--accent-color) !important;
+  font-weight: 700 !important;
+  font-size: 1.125rem !important;
+  font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
 }
 
 /* Responsive behavior */
@@ -1731,4 +1748,29 @@ html {
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
+}
+
+/* Language toggle specific styles */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Form container adjustments for language toggle positioning */
+.form-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Language toggle will not interfere with form layout since it's fixed */
+.language-toggle-container {
+  pointer-events: auto;
 }

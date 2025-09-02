@@ -176,9 +176,9 @@ const translations: Record<Language, Translations> = {
     yarimDaire: 'YARIM DAİRE OVAL İŞÇİLİK',
     
     // Placeholders
-    firmaPlaceholder: 'Firma',
-    musteriPlaceholder: 'Müşteri',
-    mimarPlaceholder: 'Mimar',
+    firmaPlaceholder: 'FİRMA / BAYİ',
+    musteriPlaceholder: 'MÜŞTERİ',
+    mimarPlaceholder: 'MİMAR',
     tarihPlaceholder: 'DD/MM/YYYY',
     
     // Depth options
@@ -293,9 +293,9 @@ const translations: Record<Language, Translations> = {
     yarimDaire: 'HALF CIRCLE OVAL LABOR',
     
     // Placeholders
-    firmaPlaceholder: 'Company',
-    musteriPlaceholder: 'Customer',
-    mimarPlaceholder: 'Architect',
+    firmaPlaceholder: 'COMPANY / DEALER',
+    musteriPlaceholder: 'CUSTOMER',
+    mimarPlaceholder: 'ARCHITECT',
     tarihPlaceholder: 'DD/MM/YYYY',
     
     // Depth options

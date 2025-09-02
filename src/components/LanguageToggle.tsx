@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
+import { createPortal } from 'react-dom'
 
 export const LanguageToggle: React.FC = () => {
   const { language, setLanguage } = useLanguage()
@@ -8,126 +9,96 @@ export const LanguageToggle: React.FC = () => {
     setLanguage(language === 'tr' ? 'en' : 'tr')
   }
 
-  return (
+  return createPortal(
     <div 
       className="language-toggle-container"
     >
       <button
         onClick={toggleLanguage}
         style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          fontFamily: 'inherit',
-          fontSize: '18px',
-          fontWeight: '900',
-          color: '#1f2937',
-          padding: '16px 32px',
-          borderRadius: '16px',
+          background: 'rgba(255, 255, 255, 0.3)',
+          backdropFilter: 'blur(10px)',
+          border: '2px solid rgba(255, 255, 255, 0.4)',
+          fontFamily: 'Tahoma, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSize: '12px',
+          fontWeight: '600',
+          color: 'rgba(0, 0, 0, 0.9)',
+          padding: '12px 6px',
+          borderRadius: '8px',
           cursor: 'pointer',
           transform: 'scale(1)',
-          transition: 'all 0.3s ease',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          width: '35px',
+          height: '65px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0.8,
+          zIndex: 99999
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)'
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
-          e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.2)'
-          e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.3)'
+          e.currentTarget.style.transform = 'scale(1.1)'
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)'
+          e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)'
+          e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.6)'
+          e.currentTarget.style.opacity = '1'
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'scale(1)'
-          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-          e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1)'
-          e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)'
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+          e.currentTarget.style.border = '2px solid rgba(255, 255, 255, 0.4)'
+          e.currentTarget.style.opacity = '0.8'
         }}
         onMouseDown={(e) => {
           e.currentTarget.style.transform = 'scale(0.95)'
         }}
         onMouseUp={(e) => {
-          e.currentTarget.style.transform = 'scale(1.05)'
+          e.currentTarget.style.transform = 'scale(1.1)'
         }}
         aria-label="Toggle language"
       >
-        {/* Animated gradient overlay for hover */}
-        <div 
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(-45deg, rgba(238, 119, 82, 0.3), rgba(231, 60, 126, 0.3), rgba(35, 166, 213, 0.3), rgba(35, 213, 171, 0.3))',
-            backgroundSize: '400% 400%',
-            animation: 'gradient 4s ease infinite',
-            opacity: 0,
-            transition: 'opacity 0.5s ease',
-            borderRadius: '16px'
-          }}
-          className="hover:opacity-100"
-        />
-        
         {/* Content */}
-        <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ 
+          position: 'relative', 
+          zIndex: 10, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          gap: '4px',
+          height: '100%'
+        }}>
           <span style={{
-            fontSize: '20px',
-            fontWeight: '900',
-            transition: 'all 0.3s ease',
-            color: '#1f2937',
-            opacity: language === 'tr' ? 1 : 0.6,
+            fontSize: '12px',
+            fontWeight: '600',
+            transition: 'all 0.2s ease',
+            color: 'rgba(0, 0, 0, 0.9)',
+            opacity: language === 'tr' ? 1 : 0.5,
             transform: language === 'tr' ? 'scale(1.1)' : 'scale(0.9)'
           }}>
             TR
           </span>
           
-          <div style={{ width: '1px', height: '24px', backgroundColor: 'rgba(31, 41, 55, 0.5)' }} />
+          <div style={{ width: '14px', height: '2px', backgroundColor: 'rgba(0, 0, 0, 0.4)' }} />
           
           <span style={{
-            fontSize: '20px',
-            fontWeight: '900',
-            transition: 'all 0.3s ease',
-            color: '#1f2937',
-            opacity: language === 'en' ? 1 : 0.6,
+            fontSize: '12px',
+            fontWeight: '600',
+            transition: 'all 0.2s ease',
+            color: 'rgba(0, 0, 0, 0.9)',
+            opacity: language === 'en' ? 1 : 0.5,
             transform: language === 'en' ? 'scale(1.1)' : 'scale(0.9)'
           }}>
             EN
           </span>
-          
-          <div style={{ marginLeft: '8px', display: 'flex', gap: '4px' }}>
-            <div style={{
-              width: '4px',
-              height: '4px',
-              backgroundColor: '#1f2937',
-              borderRadius: '50%',
-              animation: 'pulse 2s infinite'
-            }} />
-            <div style={{
-              width: '4px',
-              height: '4px',
-              backgroundColor: 'rgba(31, 41, 55, 0.7)',
-              borderRadius: '50%',
-              animation: 'pulse 2s infinite 0.5s'
-            }} />
-          </div>
         </div>
-        
-        {/* Shine effect */}
-        <div 
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: '-100%',
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-            transform: 'skewX(-12deg)',
-            transition: 'left 1s ease'
-          }}
-          className="hover:left-full"
-        />
       </button>
-    </div>
+    </div>,
+    document.body
   )
 }
