@@ -1630,10 +1630,10 @@ input:focus + .toggle-slider {
 /* Top row - Input fields */
 .discount-inputs-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-xl);
-  margin-bottom: var(--space-xl);
-  padding-bottom: var(--space-lg);
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -1644,13 +1644,20 @@ input:focus + .toggle-slider {
 }
 
 .discount-section .discount-inputs-row .input-group .label {
-  font-size: 0.875rem !important;
+  font-size: 0.8rem !important;
   font-weight: 600 !important;
   color: var(--text-secondary) !important;
   font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
   margin-bottom: var(--space-xs);
   text-transform: uppercase;
   letter-spacing: 0.025em;
+}
+
+/* Slightly smaller inputs in discount area */
+.discount-section .discount-inputs-row .input {
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
 }
 
 /* Bottom row - Read-only values */
@@ -1688,7 +1695,22 @@ input:focus + .toggle-slider {
   font-family: 'Tahoma', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
 }
 
+/* Helper text under discount label */
+.discount-note {
+  font-size: 0.72rem;
+  color: var(--text-muted, #6b7280);
+  margin-top: -4px;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
 /* Responsive behavior */
+@media (max-width: 1024px) {
+  .discount-inputs-row {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .discount-inputs-row {
     grid-template-columns: 1fr;
@@ -1773,4 +1795,39 @@ html {
 /* Language toggle will not interfere with form layout since it's fixed */
 .language-toggle-container {
   pointer-events: auto;
+}
+
+/* Overlay for discount note */
+.discount-inputs-row .input-group.has-note {
+  position: relative;
+}
+.discount-inputs-row .input-group.has-note .discount-note {
+  position: absolute;
+  top: 1.6rem; /* below the label */
+  left: 50%;
+  transform: translate(-50%, 0);
+  font-size: 0.7rem;
+  color: var(--text-muted, #6b7280);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
+  padding: 4px 8px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px -12px rgba(0,0,0,0.25);
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  margin: 0;
+  text-align: center;
+}
+.discount-inputs-row .input-group.has-note:hover .discount-note {
+  opacity: 1;
+}
+/* Remove extra padding previously added on mobile since note is above */
+@media (max-width: 768px) {
+  .discount-inputs-row .input-group.has-note .input {
+    padding-top: initial;
+  }
 }

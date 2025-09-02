@@ -124,6 +124,7 @@ export interface LaborData {
 export interface DiscountData {
   totalListDiscount: number
   depthPanelDiscount: number
+  extraDiscount?: number
 }
 
 export interface QuotationData {

@@ -70,6 +70,7 @@ interface LaborData {
 interface DiscountData {
   totalListDiscount: number // First discount (%) applies to Total List Price
   depthPanelDiscount: number // Second discount (+) applies to Depths, Panel, Hood Panel, and Baseboard
+  extraDiscount?: number // Third discount (%) applies on top of the discounted price
 }
 
 interface FormData {
@@ -187,7 +188,7 @@ function App() {
     tezgahKalinlik: 'h:4 cm', // Default: h:4 cm (1.00x base pricing)
     supurgelik: {
       tip: '',
-      mtul: 1,
+      mtul: 0,
       birimFiyati: 0,
       toplamFiyat: 0
     },
@@ -219,7 +220,8 @@ function App() {
     },
     discounts: {
       totalListDiscount: 0,
-      depthPanelDiscount: 0
+      depthPanelDiscount: 0,
+      extraDiscount: 0
     }
   })
   
@@ -364,96 +366,161 @@ function App() {
     const { name, value } = e.target
     
     setFormData(prev => {
-      const newData = {
+      const newData: any = {
         ...prev,
         [name]: value
       }
       
       // Reset color when product changes (but preserve all measurements)
       if (name === 'urun') {
-        // Only reset color if it's not available for the new product
-        const newProductColors = getColorsForProduct(allColors, value)
-        if (formData.renk && !newProductColors.find(c => c.id === formData.renk)) {
+        // If product cleared, reset dependent pricing immediately
+        if (value === '') {
           newData.renk = ''
-        }
-        // Always reset thickness when product changes for consistency
-        newData.tezgahKalinlik = 'h:4 cm'
-        
-        // Validate and update depth groups for the new product (handle Dekton vs non-Dekton)
-        newData.depthGroups = validateDepthGroups(value).map(group => ({
-          ...group,
-          birimFiyati: 0,
-          toplamFiyat: 0
-        }))
-        
-        // Reset all prices in panel groups while preserving measurements
-        newData.panelGroups = prev.panelGroups.map(group => ({
-          ...group,
-          birimFiyati: 0,
-          toplamFiyat: 0
-        }))
-        
-        // Reset all prices in davlumbaz groups while preserving measurements
-        newData.davlumbazGroups = prev.davlumbazGroups.map(group => ({
-          ...group,
-          birimFiyati: 0,
-          toplamFiyat: 0
-        }))
-        
-        // Reset supurgelik prices while preserving selection and measurements
-        if (prev.supurgelik.tip && prev.supurgelik.tip !== 'LÜTFEN SEÇİN') {
+          newData.tezgahKalinlik = 'h:4 cm'
+          newData.depthGroups = prev.depthGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          newData.panelGroups = prev.panelGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          newData.davlumbazGroups = prev.davlumbazGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
           newData.supurgelik = {
             ...prev.supurgelik,
             birimFiyati: 0,
             toplamFiyat: 0
           }
-        }
-        
-        // Reset special detail prices while preserving selection and measurements
-        // Also validate special detail selection for new product category
-        if (prev.specialDetail.tip && prev.specialDetail.tip !== 'Lütfen Seçin') {
-          // Check if current special detail selection is valid for new product category
-          const selectedProduct = products.find(p => p.id === value)
-          const newCategory = selectedProduct?.category
-          const currentSelection = prev.specialDetail.tip
-          
-          // Get valid options for new category
-          const validOptions = newCategory === 'Porcelain' 
-            ? ['Lütfen Seçin', 'PİRAMİT']
-            : ['Lütfen Seçin', 'Profil', 'Hera', 'Hera Klasik', 'Trio', 'Country', 'Balık Sırtı', 'M20', 'MQ40', 'U40']
-          
-          // Reset selection if it's not valid for new category
-          if (!validOptions.includes(currentSelection)) {
-            newData.specialDetail = {
-              tip: '',
-              mtul: prev.specialDetail.mtul,
-              birimFiyati: 0,
-              toplamFiyat: 0
-            }
-          } else {
-            newData.specialDetail = {
-              ...prev.specialDetail,
-              birimFiyati: 0,
-              toplamFiyat: 0
-            }
-          }
-        }
-        
-        // Reset eviye prices while preserving selection
-        if (prev.eviye.tip && prev.eviye.tip !== 'Lütfen Seçin') {
           newData.eviye = {
             ...prev.eviye,
             toplamFiyat: 0
           }
+          newData.specialDetail = {
+            ...prev.specialDetail,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }
+        } else {
+          // Only reset color if it's not available for the new product
+          const newProductColors = getColorsForProduct(allColors, value)
+          if (formData.renk && !newProductColors.find(c => c.id === formData.renk)) {
+            newData.renk = ''
+          }
+          // Always reset thickness when product changes for consistency
+          newData.tezgahKalinlik = 'h:4 cm'
+          
+          // Validate and update depth groups for the new product (handle Dekton vs non-Dekton)
+          newData.depthGroups = validateDepthGroups(value).map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          
+          // Reset all prices in panel groups while preserving measurements
+          newData.panelGroups = prev.panelGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          
+          // Reset all prices in davlumbaz groups while preserving measurements
+          newData.davlumbazGroups = prev.davlumbazGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          
+          // Reset supurgelik prices while preserving selection and measurements
+          if (prev.supurgelik.tip && prev.supurgelik.tip !== 'LÜTFEN SEÇİN') {
+            newData.supurgelik = {
+              ...prev.supurgelik,
+              birimFiyati: 0,
+              toplamFiyat: 0
+            }
+          }
+          
+          // Reset special detail prices while preserving selection and measurements
+          // Also validate special detail selection for new product category
+          if (prev.specialDetail.tip && prev.specialDetail.tip !== 'Lütfen Seçin') {
+            // Check if current special detail selection is valid for new product category
+            const selectedProduct = products.find(p => p.id === value)
+            const newCategory = selectedProduct?.category
+            const currentSelection = prev.specialDetail.tip
+            
+            // Get valid options for new category
+            const validOptions = newCategory === 'Porcelain' 
+              ? ['Lütfen Seçin', 'PİRAMİT']
+              : ['Lütfen Seçin', 'Profil', 'Hera', 'Hera Klasik', 'Trio', 'Country', 'Balık Sırtı', 'M20', 'MQ40', 'U40']
+            
+            // Reset selection if it's not valid for new category
+            if (!validOptions.includes(currentSelection)) {
+              newData.specialDetail = {
+                tip: '',
+                mtul: prev.specialDetail.mtul,
+                birimFiyati: 0,
+                toplamFiyat: 0
+              }
+            } else {
+              newData.specialDetail = {
+                ...prev.specialDetail,
+                birimFiyati: 0,
+                toplamFiyat: 0
+              }
+            }
+          }
+          
+          // Reset eviye prices while preserving selection
+          if (prev.eviye.tip && prev.eviye.tip !== 'Lütfen Seçin') {
+            newData.eviye = {
+              ...prev.eviye,
+              toplamFiyat: 0
+            }
+          }
         }
-        
-        // Keep all other measurements and configurations
-        // This allows users to compare prices across different products with same measurements
       }
       
-      // Reset tezgah kalinlik when color changes
+      // Reset section prices when color is cleared
       if (name === 'renk') {
         newData.tezgahKalinlik = 'h:4 cm' // Reset to default
+        if (value === '') {
+          newData.depthGroups = prev.depthGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          newData.panelGroups = prev.panelGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          newData.davlumbazGroups = prev.davlumbazGroups.map(group => ({
+            ...group,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }))
+          newData.supurgelik = {
+            ...prev.supurgelik,
+            birimFiyati: 0,
+            toplamFiyat: 0
+          }
+          newData.eviye = { ...prev.eviye, toplamFiyat: 0 }
+          newData.specialDetail = { ...prev.specialDetail, birimFiyati: 0, toplamFiyat: 0 }
+        }
+      }
+      
+      // If thickness is cleared, zero depth pricing
+      if (name === 'tezgahKalinlik' && value === '') {
+        newData.depthGroups = prev.depthGroups.map(group => ({
+          ...group,
+          birimFiyati: 0,
+          toplamFiyat: 0
+        }))
       }
       
       return newData
@@ -471,7 +538,7 @@ function App() {
       tezgahKalinlik: 'h:4 cm',
       supurgelik: {
         tip: '',
-        mtul: 1,
+        mtul: 0,
         birimFiyati: 0,
         toplamFiyat: 0
       },
@@ -503,7 +570,8 @@ function App() {
       },
       discounts: {
         totalListDiscount: 0,
-        depthPanelDiscount: 0
+        depthPanelDiscount: 0,
+        extraDiscount: 0
       }
     })
     setAvailableColors([])
@@ -549,7 +617,14 @@ function App() {
       ...prev,
       depthGroups: prev.depthGroups.map(group => {
         if (group.id === id) {
-          const updated = { ...group, [field]: value }
+          const updated: DepthGroup = { ...group, [field]: value } as DepthGroup
+          
+          // If depth selection cleared, zero prices immediately
+          if (field === 'derinlik' && typeof value === 'string' && value.trim() === '') {
+            updated.birimFiyati = 0
+            updated.toplamFiyat = 0
+            return updated
+          }
           
           // Auto-calculate birimFiyati from selected color price when derinlik changes
           if (field === 'derinlik' && typeof value === 'string') {
@@ -570,7 +645,7 @@ function App() {
             }
           }
           
-          // Auto-calculate toplamFiyat when mtul or birimFiyati changes
+          // Auto-calculate toplamFiyat when mtul or birimFiyati/derinlik changes
           if (field === 'mtul' || field === 'derinlik') {
             updated.toplamFiyat = updated.mtul * updated.birimFiyati
           }
@@ -1159,18 +1234,25 @@ function App() {
     return depthTotal + panelTotal + davlumbazTotal + supurgelikTotal
   }
 
-  // Calculate final price after discounts
+  // Calculate final price after discounts (first two), then apply third discount on top
   const calculateFinalPrice = (): number => {
     const totalListPrice = calculateTotalListPrice()
     const depthPanelTotal = calculateDepthPanelTotal()
     
     // Apply first discount (%) to total list price
-    const afterFirstDiscount = totalListPrice * (1 - formData.discounts.totalListDiscount / 100)
+    const afterFirstDiscount = totalListPrice * (1 - (formData.discounts.totalListDiscount || 0) / 100)
     
     // Apply second discount (%) to depth/panel/hood/baseboard total only
-    const secondDiscountAmount = depthPanelTotal * (formData.discounts.depthPanelDiscount / 100)
+    const secondDiscountAmount = depthPanelTotal * ((formData.discounts.depthPanelDiscount || 0) / 100)
     
-    return Math.max(0, afterFirstDiscount - secondDiscountAmount)
+    const afterTwoDiscounts = Math.max(0, afterFirstDiscount - secondDiscountAmount)
+
+    // Apply third discount on top of the discounted price
+    const third = formData.discounts.extraDiscount || 0
+    if (third > 0) {
+      return Math.max(0, afterTwoDiscounts * (1 - third / 100))
+    }
+    return afterTwoDiscounts
   }
 
   // Get selected color details including price
@@ -1344,9 +1426,10 @@ function App() {
       } : undefined,
       
       // Pricing
-      discounts: (formData.discounts.totalListDiscount > 0 || formData.discounts.depthPanelDiscount > 0) ? {
+      discounts: (formData.discounts.totalListDiscount > 0 || formData.discounts.depthPanelDiscount > 0 || (formData.discounts.extraDiscount || 0) > 0) ? {
         totalListDiscount: formData.discounts.totalListDiscount,
-        depthPanelDiscount: formData.discounts.depthPanelDiscount
+        depthPanelDiscount: formData.discounts.depthPanelDiscount,
+        extraDiscount: formData.discounts.extraDiscount || 0
       } : undefined,
       
       totalPrice: totalPrice > 0 ? totalPrice : undefined,
@@ -1605,9 +1688,7 @@ function App() {
                   required
                   disabled={!formData.renk}
                 >
-                  <option value="">
-                    {!formData.renk ? t('onceRenkSeciniz') : t('kalinlikSeciniz')}
-                  </option>
+                  <option value="">{t('seciniz')}</option>
                   <option value="STANDART">STANDART</option>
                   <option value="h:4 cm">h:4 cm</option>
                   <option value="h:5–6 cm">h:5–6 cm</option>
@@ -1625,10 +1706,8 @@ function App() {
                 <div className="price-value">
                   {getSelectedColor()?.price && formData.tezgahKalinlik ? (
                     <span className="price">{formatPrice(getAdjustedPrice())}</span>
-                  ) : getSelectedColor()?.price ? (
-                    <span className="price">₺{getSelectedColor()?.price}</span>
                   ) : (
-                    <span className="price-placeholder">{t('renkSeciniz')}</span>
+                    <span className="price-placeholder">{t('seciniz')}</span>
                   )}
                 </div>
               </div>
@@ -1913,8 +1992,8 @@ function App() {
                             <label className="label">{t('mtul')}</label>
                             <DecimalInput
                               value={formData.supurgelik.mtul || ''}
-                              onChange={(value) => updateSupurgelik('mtul', Math.max(1, toNumber(value)))}
-                              placeholder="1"
+                              onChange={(value) => updateSupurgelik('mtul', Math.max(0, toNumber(value)))}
+                              placeholder="0"
                               disabled={!formData.renk}
                             />
                           </div>
@@ -2180,11 +2259,22 @@ function App() {
                     />
                   </div>
 
-                  <div className="input-group">
+                  <div className="input-group has-note">
                     <label className="label">{t('iskontoPlus')}</label>
+                    <div className="discount-note">{t('discountPlusNote')}</div>
                     <DecimalInput
                       value={formData.discounts.depthPanelDiscount || ''}
                       onChange={(value) => updateDiscountImmediate('depthPanelDiscount', value)}
+                      placeholder="0"
+                      disabled={!formData.renk}
+                    />
+                  </div>
+
+                  <div className="input-group">
+                    <label className="label">{t('thirdDiscount')}</label>
+                    <DecimalInput
+                      value={formData.discounts.extraDiscount || ''}
+                      onChange={(value) => updateDiscountImmediate('extraDiscount', value)}
                       placeholder="0"
                       disabled={!formData.renk}
                     />

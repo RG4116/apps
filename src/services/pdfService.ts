@@ -8,6 +8,11 @@ import {
   type QuotationData
 } from './pdfUtils'
 
+// Choose number locale based on currency for non-currency numeric columns
+function getNumberLocale(currency: string): string {
+  return currency === 'EUR' ? 'de-DE' : currency === 'USD' ? 'en-US' : 'tr-TR'
+}
+
 // Setup fonts and headers with proper Turkish support
 async function setupFont(doc: jsPDF): Promise<boolean> {
   try {
@@ -225,10 +230,11 @@ function estimateTotalHeight(data: QuotationData) {
   }
 
   // Discounts
-  if (data.discounts && (data.discounts.totalListDiscount > 0 || data.discounts.depthPanelDiscount > 0)) {
+  if (data.discounts && (data.discounts.totalListDiscount > 0 || data.discounts.depthPanelDiscount > 0 || (data.discounts.extraDiscount || 0) > 0)) {
     adv(6)
     if (data.discounts.totalListDiscount > 0) adv(4)
     if (data.discounts.depthPanelDiscount > 0) adv(4)
+    if ((data.discounts.extraDiscount || 0) > 0) adv(4)
     adv(3)
   }
 
@@ -245,7 +251,8 @@ function estimateTotalHeight(data: QuotationData) {
   if (baseTotal > 0) adv(6)
   if (data.discounts?.totalListDiscount && data.discounts.totalListDiscount > 0) adv(6)
   if (data.discounts?.depthPanelDiscount && data.discounts.depthPanelDiscount > 0) adv(6)
-  const hasDiscounts = !!((data.discounts?.totalListDiscount || 0) > 0 || (data.discounts?.depthPanelDiscount || 0) > 0)
+  if ((data.discounts?.extraDiscount || 0) > 0) adv(6)
+  const hasDiscounts = !!((data.discounts?.totalListDiscount || 0) > 0 || (data.discounts?.depthPanelDiscount || 0) > 0 || (data.discounts?.extraDiscount || 0) > 0)
   if (hasDiscounts) adv(6) // discounted price line
   adv(6) // VAT line
   adv(23) // separator + grand total block
@@ -434,6 +441,9 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
   const hasFont = await setupFont(doc)
   const logoBase64 = await loadLogo()
   const quotationId = generateQuotationId()
+
+  // Locale used for numeric columns in tables
+  const numLocale = getNumberLocale(currency)
 
   console.log(`📋 PDF Generation Mode: ${hasFont ? 'Roboto (Turkish support)' : 'Helvetica (ASCII fallback)'}`)
   console.log(`📋 Quotation ID: ${quotationId}`)
@@ -624,8 +634,8 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       ensureRoom(4 * scale)
       safeText(doc, hasFont, `${group.derinlik} ${t.upTo}`, MARGIN_LEFT, y)
       safeText(doc, hasFont, group.mtul.toString(), MARGIN_LEFT + 50, y)
-      safeText(doc, hasFont, group.birimFiyati.toLocaleString('tr-TR'), MARGIN_LEFT + 85, y)
-      safeText(doc, hasFont, group.toplamFiyat.toLocaleString('tr-TR'), MARGIN_LEFT + 120, y)
+      safeText(doc, hasFont, group.birimFiyati.toLocaleString(numLocale), MARGIN_LEFT + 85, y)
+      safeText(doc, hasFont, group.toplamFiyat.toLocaleString(numLocale), MARGIN_LEFT + 120, y)
       depthTotal += group.toplamFiyat
       advance(4)
     })
@@ -667,8 +677,8 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     data.panelGroups.forEach(group => {
       ensureRoom(4 * scale)
       safeText(doc, hasFont, group.metrekare.toString(), MARGIN_LEFT, y)
-      safeText(doc, hasFont, group.birimFiyati.toLocaleString('tr-TR'), MARGIN_LEFT + 50, y)
-      safeText(doc, hasFont, group.toplamFiyat.toLocaleString('tr-TR'), MARGIN_LEFT + 85, y)
+      safeText(doc, hasFont, group.birimFiyati.toLocaleString(numLocale), MARGIN_LEFT + 50, y)
+      safeText(doc, hasFont, group.toplamFiyat.toLocaleString(numLocale), MARGIN_LEFT + 85, y)
       panelTotal += group.toplamFiyat
       advance(4)
     })
@@ -710,8 +720,8 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     data.davlumbazGroups.forEach(group => {
       ensureRoom(4 * scale)
       safeText(doc, hasFont, group.metrekare.toString(), MARGIN_LEFT, y)
-      safeText(doc, hasFont, group.birimFiyati.toLocaleString('tr-TR'), MARGIN_LEFT + 50, y)
-      safeText(doc, hasFont, group.toplamFiyat.toLocaleString('tr-TR'), MARGIN_LEFT + 85, y)
+      safeText(doc, hasFont, group.birimFiyati.toLocaleString(numLocale), MARGIN_LEFT + 50, y)
+      safeText(doc, hasFont, group.toplamFiyat.toLocaleString(numLocale), MARGIN_LEFT + 85, y)
       davlumbazTotal += group.toplamFiyat
       advance(4)
     })
@@ -803,7 +813,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
   }
 
   // Discounts Section (compact)
-  if (data.discounts && (data.discounts.totalListDiscount > 0 || data.discounts.depthPanelDiscount > 0)) {
+  if (data.discounts && (data.discounts.totalListDiscount > 0 || data.discounts.depthPanelDiscount > 0 || (data.discounts.extraDiscount || 0) > 0)) {
     drawSectionHeader(t.discounts)
     
     setFS(8)
@@ -811,15 +821,22 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     
     if (data.discounts.totalListDiscount > 0) {
       ensureRoom(4 * scale)
-      safeText(doc, hasFont, 'Toplam Liste İndirimi:', MARGIN_LEFT, y)
+      safeText(doc, hasFont, language === 'tr' ? 'Toplam Liste İndirimi:' : 'Total List Discount:', MARGIN_LEFT, y)
       safeText(doc, hasFont, `%${data.discounts.totalListDiscount}`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       advance(4)
     }
     
     if (data.discounts.depthPanelDiscount > 0) {
       ensureRoom(4 * scale)
-      safeText(doc, hasFont, 'Derinlik/Panel İndirimi:', MARGIN_LEFT, y)
+      safeText(doc, hasFont, language === 'tr' ? 'Derinlik/Panel İndirimi:' : 'Depth/Panel Discount:', MARGIN_LEFT, y)
       safeText(doc, hasFont, `%${data.discounts.depthPanelDiscount}`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      advance(4)
+    }
+
+    if ((data.discounts.extraDiscount || 0) > 0) {
+      ensureRoom(4 * scale)
+      safeText(doc, hasFont, language === 'tr' ? 'Ek İskonto:' : 'Extra Discount:', MARGIN_LEFT, y)
+      safeText(doc, hasFont, `%${data.discounts.extraDiscount}`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       advance(4)
     }
     
@@ -850,7 +867,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
     doc.setTextColor(120, 120, 120)
     safeText(doc, hasFont, `${t.listPrice}:`, MARGIN_LEFT, y)
     doc.setTextColor(0, 0, 0)
-    safeText(doc, hasFont, `${baseTotal.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+    safeText(doc, hasFont, formatPrice(baseTotal, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
     advance(6)
   }
   
@@ -863,7 +880,7 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       doc.setTextColor(120, 120, 120)
       safeText(doc, hasFont, `${t.discount} (%${data.discounts.totalListDiscount}):`, MARGIN_LEFT, y)
       doc.setTextColor(200, 0, 0)
-      safeText(doc, hasFont, `-${discountAmount.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      safeText(doc, hasFont, formatPrice(-discountAmount, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       discountedTotal -= discountAmount
       advance(6)
     }
@@ -876,8 +893,19 @@ export const generateQuotationPDF = async (data: QuotationData, openInNewTab = f
       doc.setTextColor(120, 120, 120)
       safeText(doc, hasFont, `${t.discount} (%${data.discounts.depthPanelDiscount}):`, MARGIN_LEFT, y)
       doc.setTextColor(200, 0, 0)
-      safeText(doc, hasFont, `-${discountAmount.toLocaleString('tr-TR')} TL`, PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      safeText(doc, hasFont, formatPrice(-discountAmount, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
       discountedTotal -= discountAmount
+      advance(6)
+    }
+
+    if ((data.discounts.extraDiscount || 0) > 0) {
+      const thirdAmount = discountedTotal * ((data.discounts.extraDiscount || 0) / 100)
+      ensureRoom(6 * scale)
+      doc.setTextColor(120, 120, 120)
+      safeText(doc, hasFont, `${language === 'tr' ? 'Ek İskonto' : 'Extra Discount'} (%${data.discounts.extraDiscount}):`, MARGIN_LEFT, y)
+      doc.setTextColor(200, 0, 0)
+      safeText(doc, hasFont, formatPrice(-thirdAmount, currency), PAGE_WIDTH - MARGIN_RIGHT, y, { align: 'right' })
+      discountedTotal -= thirdAmount
       advance(6)
     }
   }

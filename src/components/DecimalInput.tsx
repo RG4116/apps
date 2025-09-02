@@ -82,12 +82,11 @@ const DecimalInput: React.FC<DecimalInputProps> = ({
     if (isEditingNumber(s, allowNegative)) {
       setText(s);
 
-      // Always update parent immediately for real-time updates
-      // This ensures deletion, partial edits, and complete numbers all trigger updates
+      // Only propagate to parent when it's a complete number; otherwise wait until blur
       if (isCompleteNumber(s)) {
         onChange(normalize(s));
-      } else {
-        // For incomplete/empty values, send empty string (parent will convert to 0)
+      } else if (s === '') {
+        // If user cleared the field, propagate immediately so totals reset dynamically
         onChange('');
       }
     }

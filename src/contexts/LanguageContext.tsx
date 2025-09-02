@@ -97,6 +97,10 @@ export interface Translations {
   iskontoluFiyat: string
   kdv: string
   genelToplam: string
+  // New: Third discount label
+  thirdDiscount: string
+  // New: Note under (+) discount label
+  discountPlusNote: string
   
   // PDF
   downloadPdf: string
@@ -217,6 +221,10 @@ const translations: Record<Language, Translations> = {
     iskontoluFiyat: 'İSKONTOLU FİYAT',
     kdv: 'KDV (%20)',
     genelToplam: 'GENEL TOPLAM',
+    // Update label for the 3rd discount
+    thirdDiscount: 'EK İSKONTO (%)',
+    // Note shown under (+) discount
+    discountPlusNote: 'Ön detay, eviye ve işçiliklere uygulanmaz.',
     
     // PDF
     downloadPdf: '📄 PDF İndir',
@@ -334,6 +342,10 @@ const translations: Record<Language, Translations> = {
     iskontoluFiyat: 'DISCOUNTED PRICE',
     kdv: 'VAT (%20)',
     genelToplam: 'GRAND TOTAL',
+    // Update label for the 3rd discount
+    thirdDiscount: 'EXTRA DISCOUNT (%)',
+    // Note shown under (+) discount
+    discountPlusNote: 'Not applied to special front detail, sink and labor.',
     
     // PDF
     downloadPdf: '📄 Download PDF',
