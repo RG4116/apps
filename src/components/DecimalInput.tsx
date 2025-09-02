@@ -32,7 +32,7 @@ const DecimalInput: React.FC<DecimalInputProps> = ({
   onChange,
   allowNegative = false,
   className = '',
-  placeholder = '0.0',
+  placeholder = '0',
   ...props
 }) => {
   // local string state for what user sees while typing
@@ -85,9 +85,6 @@ const DecimalInput: React.FC<DecimalInputProps> = ({
       // Only propagate to parent when it's a complete number; otherwise wait until blur
       if (isCompleteNumber(s)) {
         onChange(normalize(s));
-      } else if (s === '') {
-        // If user cleared the field, propagate immediately so totals reset dynamically
-        onChange('');
       }
     }
   };

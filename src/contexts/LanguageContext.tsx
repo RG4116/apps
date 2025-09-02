@@ -155,7 +155,7 @@ const translations: Record<Language, Translations> = {
     // Sections
     derinlik: 'PROJEDE KAÇ FARKLI DERİNLİK VAR?',
     derinlikField: 'DERİNLİK',
-    seciniz: 'Seçiniz',
+    seciniz: 'SEÇİNİZ',
     iskontoPlus: '(+) İSKONTO (%)',
     iskontoFiyat: 'İSKONTOLU FİYAT',
     
@@ -276,7 +276,7 @@ const translations: Record<Language, Translations> = {
     // Sections
     derinlik: 'HOW MANY DIFFERENT DEPTHS IN PROJECT?',
     derinlikField: 'DEPTH',
-    seciniz: 'Select',
+    seciniz: 'SELECT',
     iskontoPlus: '(+) DISCOUNT (%)',
     iskontoFiyat: 'DISCOUNTED PRICE',
     
