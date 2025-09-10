@@ -632,7 +632,7 @@ function App() {
             if (selectedColor?.price) {
               // Convert price string to number and apply depth-based and thickness multipliers
               const basePrice = parseFloat(selectedColor.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-              const depthMultiplier = getDepthPriceMultiplier(value)
+              const depthMultiplier = getDepthPriceMultiplier(value, getSelectedProduct()?.name || '')
               
               // Check for Evdema special pricing or normal thickness-based pricing
               const adjustedPrice = prev.firmaBayi && prev.firmaBayi.toLowerCase().includes('evdema') 
@@ -1083,7 +1083,7 @@ function App() {
           ...prev,
           depthGroups: prev.depthGroups.map(group => {
             if (group.derinlik) {
-              const depthMultiplier = getDepthPriceMultiplier(group.derinlik)
+              const depthMultiplier = getDepthPriceMultiplier(group.derinlik, getSelectedProduct()?.name || '')
               const thicknessMultiplier = getThicknessPriceMultiplier(prev.tezgahKalinlik)
               const adjustedPrice = basePrice * depthMultiplier * thicknessMultiplier
               return {
@@ -1139,7 +1139,7 @@ function App() {
           ...prev,
           depthGroups: prev.depthGroups.map(group => {
             if (group.derinlik) {
-              const depthMultiplier = getDepthPriceMultiplier(group.derinlik)
+              const depthMultiplier = getDepthPriceMultiplier(group.derinlik, getSelectedProduct()?.name || '')
               const thicknessMultiplier = getThicknessPriceMultiplier(prev.tezgahKalinlik)
               const adjustedPrice = basePrice * depthMultiplier * thicknessMultiplier
               return {
@@ -1502,7 +1502,7 @@ function App() {
           // Update depth groups with new adjusted price
           depthGroups: prev.depthGroups.map(group => {
             if (group.derinlik) {
-              const depthMultiplier = getDepthPriceMultiplier(group.derinlik)
+              const depthMultiplier = getDepthPriceMultiplier(group.derinlik, getSelectedProduct()?.name || '')
               const finalPrice = adjustedPrice * depthMultiplier
               return {
                 ...group,

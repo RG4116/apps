@@ -38,14 +38,15 @@ export const getThicknessPriceMultiplier = (thickness: string): number => {
 }
 
 // Get depth-based price multiplier following the specified pattern
-export const getDepthPriceMultiplier = (depth: string): number => {
-  // Base multipliers following the exact specification (baseline: 65cm):
-  // 65cm → 1.000 (baseline)
-  // 70cm → 1.165 (+16.5% from 65cm)
-  // 80cm → 1.335 (+33.5% from 65cm) 
-  // 90cm → 2.000 (+100% sharp jump from 65cm)
-  // 100/110/120cm → 2.000 (prices stabilize at 90cm+ level)
-  
+// productName is optional; when provided and it's a Dekton product, 80 cm becomes 2.000x (only for Dekton)
+export const getDepthPriceMultiplier = (depth: string, productName?: string): number => {
+  // Dekton special rule: 80 cm → 2.000x (only for Dekton products)
+  const isDekton = (productName || '').toLowerCase().includes('dekton')
+  if (isDekton && /(^|\b)80\s*cm/.test(depth)) {
+    return 2.000
+  }
+
+  // Base multipliers following the exact specification (baseline: 65cm)
   if (depth.includes('61') || depth.includes('65')) {
     return 1.000 // Base price for 61cm/65cm baseline
   } else if (depth.includes('70')) {
